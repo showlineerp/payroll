@@ -65,6 +65,17 @@
                         </ul>
                     </li>
                 <?php endif; ?>
+                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                    <li class="has-dropdown <?php echo e((request()->is('staff*')) ? 'active' : ''); ?>">
+                        <a href="#currencies" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span><?php echo e(trans('Currencies')); ?></span></a>
+                        <ul id="currencies" class="collapse list-unstyled ">
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                                <li id="employee_list"><a href="<?php echo e(route('currency.index')); ?>"><?php echo e(__('Manage Currencies')); ?></a></li>
+                            <?php endif; ?>
+                           
+                        </ul>
+                    </li>
+                <?php endif; ?>
 
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('customize-setting')): ?>
                     <li class="has-dropdown <?php echo e((request()->is('settings*')) ? 'active' : ''); ?>">
