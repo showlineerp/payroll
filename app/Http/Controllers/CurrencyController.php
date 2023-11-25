@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\company;
+use App\Models\Currency;
+use App\Models\CurrencyRate;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
 class CurrencyController extends Controller
@@ -16,94 +21,53 @@ class CurrencyController extends Controller
         $logged_user = auth()->user();
         if ($logged_user->can('view-details-employee')) {
             $companies = company::select('id', 'company_name')->get();
-            $roles = Role::where('id', '!=', 3)->where('is_active', 1)->select('id', 'name')->get();
+            $currencies = Currency::with(['latestRate', 'company'])->get();
+        
             $currentDate = date('Y-m-d');
 
             if (request()->ajax()) {
 
-            
 
-                $employees = $this->getEmployees($request, $currentDate);
-
-                return datatables()->of($employees)
+                return datatables()->of($currencies)
                     ->setRowId(function ($row) {
                         return $row->id;
                     })
                     ->addColumn('name', function ($row) {
-                        if ($row->user->profile_photo) {
-                            $url = url('uploads/profile_photos/'.$row->user->profile_photo);
-                            $profile_photo = '<img src="'.$url.'" class="profile-photo md" style="height:35px;width:35px"/>';
-                        } else {
-                            $url = url('logo/avatar.jpg');
-                            $profile_photo = '<img src="'.$url.'" class="profile-photo md" style="height:35px;width:35px"/>';
-                        }
-                        $name = '<span><a href="employees/'.$row->id.'" class="d-block text-bold" style="color:#24ABF2">'.$row->full_name.'</a></span>';
-                        $username = '<span>'.__('file.Username').': '.($row->user->username ?? '').'</span>';
-                        $staff_id = '<span>'.__('file.Staff Id').': '.($row->staff_id ?? '').'</span>';
-                        $gender = '';
-                        if ($row->gender != null) {
-                            $gender = '<span>'.__('file.Gender').': '.__('file.'.$row->gender ?? '').'</span></br>';
-                        }
-
-                        $shift = '<span>'.__('file.Shift').': '.($row->officeShift->shift_name ?? '').'</span>';
-                        if (config('variable.currency_format') == 'suffix') {
-                            $salary = '<span>'.__('file.Salary').': '.($row->basic_salary ?? '').' '.config('variable.currency').'</span>';
-                        } else {
-                            $salary = '<span>'.__('file.Salary').': '.config('variable.currency').' '.($row->basic_salary ?? '').'</span>';
-                        }
-
-                        if ($row->payslip_type) {
-                            $payslip_type = '<span>'.__('file.Payslip Type').': '.__('file.'.$row->payslip_type).'</span>';
-                        } else {
-                            $payslip_type = ' ';
-                        }
-
-                        return "<div class='d-flex'>
-                                        <div class='mr-2'>".$profile_photo.'</div>
-                                        <div>'
-                                            .$name.'</br>'.$username.'</br>'.$staff_id.'</br>'.$gender.$shift.'</br>'.$salary.'</br>'.$payslip_type;
-
+                        return "<span>" . $row->name . "</span>";
+                    })
+                    ->addColumn('rate', function ($row) {
+                        return  $row->latestRate->rate;
+                    })
+                    ->addColumn('rate_updated', function ($row) {
+                        return date('d/m/Y', strtotime($row->latestRate->updated_at));
                     })
                     ->addColumn('company', function ($row) {
-                        $company = "<span class='text-bold'>".strtoupper($row->company->company_name ?? '').'</span>';
-                        $department = '<span>'.__('file.Department').' : '.($row->department->department_name ?? '').'</span>';
-                        $designation = '<span>'.__('file.Designation').' : '.($row->designation->designation_name ?? '').'</span>';
-
-                        return $company.'</br>'.$department.'</br>'.$designation;
+                        $company = "<span class='text-bold'>" . strtoupper($row->company->company_name ?? '') . '</span>';
+                        return $company;
                     })
-                    ->addColumn('contacts', function ($row) {
-                        $email = "<i class='fa fa-envelope text-muted' title='Email'></i> ".$row->email;
-                        $contact_no = "<i class='text-muted fa fa-phone' title='Phone'></i> ".$row->contact_no;
-                        $skype_id = "<i class='text-muted fa fa-skype' title='Skype'></i> ".$row->skype_id;
-                        $whatsapp_id = "<i class='text-muted fa fa-whatsapp' title='Whats App'></i> ".$row->whatsapp_id;
 
-                        return $email.'</br>'.$contact_no.'</br>'.$skype_id.'</br>'.$whatsapp_id;
-                    })
                     ->addColumn('action', function ($data) {
                         $button = '';
                         if (auth()->user()->can('view-details-employee')) {
-                            $button .= '<a href="employees/'.$data->id.'"  class="edit btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="View Details"><i class="dripicons-preview"></i></button></a>';
+                            $button .= '<a href="'.route('currency.edit', ['currency'=> $data->id]).'"  class="edit btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="View Details"><i class="dripicons-preview"></i></button></a>';
                             $button .= '&nbsp;&nbsp;&nbsp;';
                         }
-                        if (auth()->user()->can('modify-details-employee')) {
-                            if ($data->role_users_id != 1) {
-                                $button .= '<button type="button" name="delete" id="'.$data->id.'" class="delete btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Delete"><i class="dripicons-trash"></i></button>';
-                                $button .= '&nbsp;&nbsp;&nbsp;';
-                            }
-
-                            $button .= '<a class="download btn-sm" style="background:#FF7588; color:#fff" title="PDF" href="'.route('employees.pdf', $data->id).'"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>';
-                        }
+                        // if (auth()->user()->can('modify-details-employee')) {
+                        //     if ($data->role_users_id != 1) {
+                        //         $button .= '<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Delete"><i class="dripicons-trash"></i></button>';
+                        //         $button .= '&nbsp;&nbsp;&nbsp;';
+                        //     }
+                        // }
 
                         return $button;
                     })
-                    ->rawColumns(['name', 'company', 'contacts', 'action'])
+                    ->rawColumns(['name', 'company','currency', 'action'])
                     ->make(true);
             }
-            return view('currency.index', compact('companies', 'roles'));
+            return view('currency.index', compact('companies', 'currencies'));
         } else {
             return response()->json(['success' => __('You are not authorized')]);
         }
-    
     }
 
     /**
@@ -120,6 +84,41 @@ class CurrencyController extends Controller
     public function store(Request $request)
     {
         //
+
+        $logged_user = auth()->user();
+        if ($logged_user->can('view-details-employee')) {
+            if (request()->ajax()) {
+                $validator = Validator::make(
+                    $request->only('name', 'description', 'rate', 'symbol'),
+                    [
+                        'name' => 'required',
+                        'symbol' => 'required',
+                        'rate' => 'required|numeric'
+                    ]
+                );
+
+                if ($validator->fails()) {
+                    return response()->json(['errors' => $validator->errors()->all()]);
+                }
+                DB::beginTransaction();
+                try {
+                    $currency_input =  $request->only('name', 'description', 'company_id', 'symbol');
+                    $currency = Currency::create($currency_input);
+                    $rate_input =  $request->only('rate');
+                    $rate_input['currency_id'] = $currency->id;
+                    $rate = CurrencyRate::create($rate_input);
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollback();
+
+                    return response()->json(['error' => $e->getMessage()]);
+                }
+                return response()->json(['success' => __('Currency Added successfully.')]);
+            } else {
+                return response()->json(['success' => __('You are not authorized')]);
+            }
+        }
+        return response()->json(['success' => __('You are not authorized')]);
     }
 
     /**
