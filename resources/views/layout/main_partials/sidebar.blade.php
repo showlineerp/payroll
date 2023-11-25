@@ -69,7 +69,7 @@
                     </li>
                 @endcan
                 @can('view-details-employee')
-                    <li class="has-dropdown {{ (request()->is('staff*')) ? 'active' : '' }}">
+                    <li class="has-dropdown {{ (request()->is('currency*')) ? 'active' : '' }}">
                         <a href="#currencies" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{trans('Currencies')}}</span></a>
                         <ul id="currencies" class="collapse list-unstyled ">
                             @can('view-details-employee')
