@@ -11,9 +11,7 @@
         @can('store-details-employee')
         <button type="button" class="btn btn-info" name="create_record" id="create_record"><i class="fa fa-plus"></i> {{__('Add Currency')}}</button>
         @endcan
-        @can('modify-details-employee')
-        <button type="button" class="btn btn-danger" name="bulk_delete" id="bulk_delete"><i class="fa fa-minus-circle"></i> {{__('Bulk delete')}}</button>
-        @endcan
+       
         <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
             <i class="fa fa-filter" aria-hidden="true"></i> Filter
         </button>

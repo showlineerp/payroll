@@ -22,7 +22,7 @@ class CurrencyController extends Controller
         if ($logged_user->can('view-details-employee')) {
             $companies = company::select('id', 'company_name')->get();
             $currencies = Currency::with(['latestRate', 'company'])->get();
-        
+
             $currentDate = date('Y-m-d');
 
             if (request()->ajax()) {
@@ -49,7 +49,7 @@ class CurrencyController extends Controller
                     ->addColumn('action', function ($data) {
                         $button = '';
                         if (auth()->user()->can('view-details-employee')) {
-                            $button .= '<a href="'.route('currency.edit', ['currency'=> $data->id]).'"  class="edit btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="View Details"><i class="dripicons-preview"></i></button></a>';
+                            $button .= '<a href="' . route('currency.edit', ['currency' => $data->id]) . '"  class="edit btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="View Details"><i class="dripicons-preview"></i></button></a>';
                             $button .= '&nbsp;&nbsp;&nbsp;';
                         }
                         // if (auth()->user()->can('modify-details-employee')) {
@@ -61,7 +61,7 @@ class CurrencyController extends Controller
 
                         return $button;
                     })
-                    ->rawColumns(['name', 'company','currency', 'action'])
+                    ->rawColumns(['name', 'company', 'currency', 'action'])
                     ->make(true);
             }
             return view('currency.index', compact('companies', 'currencies'));
@@ -135,6 +135,9 @@ class CurrencyController extends Controller
     public function edit(string $id)
     {
         //
+        $currency = Currency::with(['rates', 'latestRate'])->findOrFail($id);
+        $companies = company::select('id', 'company_name')->get();
+        return view('currency.edit', compact('currency','companies'));
     }
 
     /**
@@ -143,6 +146,33 @@ class CurrencyController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $validator = Validator::make(
+            $request->only('name', 'description', 'rate', 'symbol'),
+            [
+                'name' => 'required',
+                'symbol' => 'required',
+                'rate' => 'required|numeric'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return redirect()->back()->with(['errors' => $validator->errors()->all()]);
+        }
+        DB::beginTransaction();
+        try {
+            $currency_input =  $request->only('name', 'description', 'company_id', 'symbol');
+            $currency = Currency::where('id', $id)->update($currency_input);
+            $rate_input =  $request->only('rate');
+            $rate_input['currency_id'] = $id;
+            $rate = CurrencyRate::create($rate_input);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()->with(['errors' => [['code'=> $e->getMessage(),'message'=> $e->getMessage() ]]]);
+        }
+        return redirect()->back()->with(['success' => __('Currency Updated successfully.')]);
+ 
     }
 
     /**

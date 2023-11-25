@@ -19,4 +19,8 @@ class Currency extends Model
     {
         return $this->belongsTo(company::class, 'company_id', 'id');
     }
+       public function rates()
+    {
+        return $this->hasMany(CurrencyRate::class, 'currency_id', 'id')->orderByDesc('created_at');
+    }
 }
