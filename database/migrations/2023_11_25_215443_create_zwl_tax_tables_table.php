@@ -20,6 +20,8 @@ return new class extends Migration
             $table->double('deduct');
             $table->string('calculation_info');
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_above')->default(false);
+
             $table->timestamps();
         });
     }
