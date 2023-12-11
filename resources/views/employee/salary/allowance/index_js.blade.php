@@ -56,16 +56,24 @@
                 data: 'allowance_title',
                 name: 'allowance_title'
             },
+           
             {
                 data: 'allowance_amount',
                 name: 'allowance_amount',
-                render: function (data) {
+                render: function (data, type, row) {
                     if ('{{config('variable.currency_format') =='suffix'}}') {
                         return data + ' {{config('variable.currency')}}';
                     } else {
-                        return '{{config('variable.currency')}} ' + data;
+                        return row.currency_symbol +' '+ + data;
 
                     }
+                }
+            },
+            {
+                data: 'deductible_amt',
+                name: 'taxable_percentage',
+                render: function (data) {
+                    return data + '%'
                 }
             },
             {
@@ -89,7 +97,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 4],
+                'targets': [0, 5],
             },
         ],
 
@@ -196,6 +204,8 @@
                 $('.month_year').val(html.data.month_year);
                 $('#allowance_amount').val(html.data.allowance_amount);
                 $('#allowance_title').val(html.data.allowance_title);
+                $('#currency_id').val(html.data.currency_id);
+                $('#deductible_amt').val(html.data.deductible_amt);
                 $('#allowance_is_taxable').selectpicker('val', html.data.is_taxable);
 
                 $('#allowance_hidden_id').val(html.data.id);
