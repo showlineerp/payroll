@@ -173,6 +173,7 @@ class CurrencyController extends Controller
         }
         return redirect()->back()->with(['success' => __('Currency Updated successfully.')]);
  
+        
     }
 
     /**
