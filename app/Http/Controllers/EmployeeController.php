@@ -9,6 +9,7 @@ use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Http\traits\LeaveTypeDataManageTrait;
 use App\Imports\UsersImport;
+use App\Models\Currency;
 use App\Models\office_shift;
 use App\Models\QualificationEducationLevel;
 use App\Models\QualificationLanguage;
@@ -658,8 +659,9 @@ class EmployeeController extends Controller
     public function setSalary(Employee $employee)
     {
         $logged_user = auth()->user();
+        $currencies = Currency::get();
         if ($logged_user->can('modify-details-employee')) {
-            return view('employee.salary.index', compact('employee'));
+            return view('employee.salary.index', compact('employee', 'currencies'));
         }
 
         return response()->json(['success' => __('You are not authorized')]);
