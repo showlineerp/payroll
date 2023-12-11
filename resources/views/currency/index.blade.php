@@ -101,7 +101,7 @@
 
                         <div class="col-md-6 form-group">
                             <label class="text-bold">Rate <span class="text-danger">*</span></label>
-                            <input type="number" step="2" name="rate" id="rate" placeholder="Rate" required class="form-control text-left" value="1">
+                            <input type="text"  name="rate" id="rate" placeholder="Rate" required class="form-control text-left" value="1">
                         </div>
 
 
