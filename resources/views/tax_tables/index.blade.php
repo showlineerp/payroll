@@ -112,7 +112,7 @@
                             {{$dt->calculation_info}}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-success mx-1" href="{{route('usd-taxtables.edit', ['usd_taxtable'=> $dt->id])}}">edit</a>
+                           
                             <a class="btn btn-sm btn-danger" href="{{url('usd-taxtables/delete/'.$dt->id)}}">Delete</a>
                         </td>
                     </tr>
@@ -145,7 +145,7 @@
                             {{$dt->calculation_info}}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-success mx-1" href="{{route('usd-taxtables.edit', ['usd_taxtable'=> $dt->id])}}">edit</a>
+                           
                             <a class="btn btn-sm btn-danger" href="{{url('usd-taxtables/delete/'.$dt->id)}}">Delete</a>
                         </td>
                     </tr>
@@ -177,7 +177,7 @@
                             {{$dt->calculation_info}}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-success mx-1" href="{{route('usd-taxtables.edit', ['usd_taxtable'=> $dt->id])}}">edit</a>
+                           
                             <a class="btn btn-sm btn-danger" href="{{url('usd-taxtables/delete/'.$dt->id)}}">Delete</a>
                         </td>
                     </tr>
@@ -210,7 +210,7 @@
                             {{$dt->calculation_info}}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-success mx-1" href="{{route('usd-taxtables.edit', ['usd_taxtable'=> $dt->id])}}">edit</a>
+                           
                             <a class="btn btn-sm btn-danger" href="{{url('usd-taxtables/delete/'.$dt->id)}}">Delete</a>
                         </td>
                     </tr>
@@ -243,7 +243,7 @@
                             {{$dt->calculation_info}}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-success mx-1" href="{{route('usd-taxtables.edit', ['usd_taxtable'=> $dt->id])}}">edit</a>
+                           
                             <a class="btn btn-sm btn-danger" href="{{url('usd-taxtables/delete/'.$dt->id)}}">Delete</a>
                         </td>
                     </tr>

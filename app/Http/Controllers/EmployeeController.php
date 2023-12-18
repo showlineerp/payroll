@@ -315,6 +315,8 @@ class EmployeeController extends Controller
                 $data['attendance_type'] = $request->attendance_type; //new
                 $data['joining_date'] = $request->joining_date; //new
                 $data['is_active'] = 1;
+                $data['salary_type'] = $request->salary_type;
+                $data['employee_grade'] = $request->employee_grade;
 
                 $user = [];
                 $user['first_name'] = $request->first_name;
