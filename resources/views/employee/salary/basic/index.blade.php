@@ -63,10 +63,23 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
+                                <label>{{__('Allowance Currency')}} *</label>
+                                <select name="currency_id" id="currency_id" required class="form-control">
+                                    @php
+                                    $currencies = App\Models\Currency::get();
+                                    @endphp
+                                    @if ($currencies->isNotEmpty())
+                                    @foreach($currencies as $cur)
+                                    <option value="{{$cur->id}}">{{$cur->name }} {{ $cur->symbol }}</option>
+                                    @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
                                 @if(config('variable.currency_format')=='suffix')
-                                <label>{{__('Basic Salary')}} ({{config('variable.currency')}}) *</label>
+                                <label>{{__('Basic Salary')}} *</label>
                                 @else
-                                <label>({{config('variable.currency')}}) {{__('Basic Salary')}} *</label>
+                                <label> {{__('Basic Salary')}} *</label>
                                 @endif
 
                                 <input type="text" name="basic_salary" id="basic_salary_edit" placeholder="{{__('0.00')}}" class="form-control">
