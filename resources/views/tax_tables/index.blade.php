@@ -23,6 +23,7 @@
                     <div class="col-md-3 form-group">
                         <label class="text-bold">{{__('To')}} <span class="text-danger">*</span></label>
                         <input type="text" name="upper_range" id="upper_bound" placeholder="{{__('Upper Range')}}" required class="form-control text-left">
+                        <small class="tex-muted text-right" style="color:grey">-1 is above</small>
                     </div>
                     <div class="col-md-3 form-group">
                         <label class="text-bold">{{__('Multiply by')}} <span class="text-danger">%</span></label>
@@ -96,9 +97,12 @@
                         <td>
                             {{$dt->lower_range}}
                         </td>
-
                         <td>
+                            @if(intval($dt->upper_range) == -1)
+                            above
+                            @else
                             {{$dt->upper_range}}
+                            @endif
                         </td>
                         <td>
                             {{$dt->multiply_by}} %
@@ -132,7 +136,11 @@
                         </td>
 
                         <td>
+                            @if(intval($dt->upper_range) == -1)
+                            above
+                            @else
                             {{$dt->upper_range}}
+                            @endif
                         </td>
                         <td>
                             {{$dt->multiply_by}} %
@@ -162,9 +170,12 @@
                         <td>
                             {{$dt->lower_range}}
                         </td>
-
                         <td>
+                            @if(intval($dt->upper_range) == -1)
+                            above
+                            @else
                             {{$dt->upper_range}}
+                            @endif
                         </td>
                         <td>
                             {{$dt->multiply_by}} %
@@ -195,9 +206,12 @@
                         <td>
                             {{$dt->lower_range}}
                         </td>
-
                         <td>
+                            @if(intval($dt->upper_range) == -1)
+                            above
+                            @else
                             {{$dt->upper_range}}
+                            @endif
                         </td>
                         <td>
                             {{$dt->multiply_by}} %
@@ -230,7 +244,11 @@
                         </td>
 
                         <td>
+                            @if(intval($dt->upper_range) == -1)
+                            above
+                            @else
                             {{$dt->upper_range}}
+                            @endif
                         </td>
                         <td>
                             {{$dt->multiply_by}} %
