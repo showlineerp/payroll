@@ -71,7 +71,7 @@
 
 
         <div class="table-responsive bg-white " id="usd_taxtables">
-            <table id="tax_tables" class="table  table-stripped">
+            <table id="tax_tables" class="table  table-striped">
                 <thead>
                     <tr>
                         <th>From</th>
