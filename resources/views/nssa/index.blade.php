@@ -13,8 +13,9 @@
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
+            @endif
         </div>
-        @endif
+       
         <div id="form_resul">
             @if($errors->any())
             <div class="alert alert-danger">
@@ -95,7 +96,7 @@
                             {{ $n->last_updated_by }}
                         </td>
                         <td>
-                            edit
+                            <a href="{{route('nssa-taxtables.edit', ['nssa_taxtable'=> $n->id])}}" class="btn btn-info">update</a>
                         </td>
                     </tr>
                     @endforeach

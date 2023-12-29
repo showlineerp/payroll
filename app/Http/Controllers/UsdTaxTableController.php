@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\company;
 use App\Models\Currency;
+use App\Models\NssaTable;
 use App\Models\UsdTaxTable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -90,6 +91,9 @@ class UsdTaxTableController extends Controller
     public function edit(string $id)
     {
         //
+        $n = NssaTable::find($id);
+
+        return view('nssa.edit', compact('n'));
     }
 
     /**
