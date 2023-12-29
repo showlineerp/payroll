@@ -92,6 +92,9 @@
                             @can('view-details-employee')
                                 <li id="nssa_tax_table"><a href="{{route('nssa-taxtables.index')}}">{{__('Nssa Tax Table')}}</a></li>
                             @endcan
+                            @can('view-details-employee')
+                                <li id="zimdef_tax_table"><a href="{{route('zimdef-taxtables.index')}}">{{__('Zimdef Tax Table')}}</a></li>
+                            @endcan
                         </ul>
                     </li>
                 @endcan
