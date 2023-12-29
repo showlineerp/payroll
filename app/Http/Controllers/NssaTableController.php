@@ -70,18 +70,46 @@ class NssaTableController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(NssaTable $nssaTable)
+    public function edit( $nssaTable)
     {
         //
+        $n = NssaTable::find($nssaTable);
+
+        return view('nssa.edit', compact('n'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, NssaTable $nssaTable)
+    public function update(Request $request, $nssaTable)
     {
         //
-    }
+        $logged_user = auth()->user();
+        if ($logged_user->can('store-details-employee')) {
+            $validator = Validator::make($request->all(), [
+                'currency_id' => 'required',
+                'posb_contribution' => 'required',
+                'insuarance_ceiling' => 'required',
+                'posb_insuarance' => 'required',
+            ]);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+        
+            $nssa = $request->only(['currency_id', 'posb_contribution', 'insuarance_ceiling', 'posb_insuarance']);
+            $nssa['last_updated_by'] = $logged_user->first_name . ' ' . $logged_user->last_name;
+            $nssa['updated_at'] = Carbon::now();
+            
+            $nssa['currency'] = Currency::find($request->currency_id)->symbol;
+            $update =  NssaTable::where('id', $nssaTable)->update($nssa);
+            if ($update) {
+                return  redirect('nssa-taxtables')->with('success', __('Nssa table updated succesfully'));
+            }
+        } else {
+            return redirect()->back()->with('errors', ['failed'=> __('You are not authorized')]);
+        }
+}
+
 
     /**
      * Remove the specified resource from storage.
