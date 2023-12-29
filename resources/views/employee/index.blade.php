@@ -269,6 +269,22 @@
                             </div>
 
                             <div class="col-md-6 form-group">
+                                <label>{{__('Salary Type')}} *</label>
+                                <select name="salary_type" id="salary_type" required class="selectpicker form-control" title="{{__('Selecting',['key'=>__('Payslip Type')])}}...">
+                                    <!-- <option value="Hourly">{{__('Hourly Payslip')}}</option> -->
+                                    <option value="Daily"> Daily Payslip</option>
+                                    <option value="Weekly"> Weekly Payslip</option>
+                                    <option value="Fortnightly"> Fortnightly Payslip</option>
+                                    <option value="Monthly">{{__('Monthly Payslip')}}</option>
+                                    <option value="Annually"> Annual Payslip</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="text-bold">{{__('Employee Grade')}} <span class="text-danger">*</span></label>
+                                <input type="text" name="employee_grade" id="employee_grade" class="form-control ">
+                            </div>
+
+                            <div class="col-md-6 form-group">
                                 <label class="text-bold">{{__('Date Of Joining')}} <span class="text-danger">*</span></label>
                                 <input type="text" name="joining_date" id="joining_date" class="form-control date">
                             </div>

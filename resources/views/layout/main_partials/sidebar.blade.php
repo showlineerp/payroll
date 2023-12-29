@@ -68,6 +68,29 @@
                         </ul>
                     </li>
                 @endcan
+                @can('view-details-employee')
+                    <li class="has-dropdown {{ (request()->is('currency*')) ? 'active' : '' }}">
+                        <a href="#currencies" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{trans('Currencies')}}</span></a>
+                        <ul id="currencies" class="collapse list-unstyled ">
+                            @can('view-details-employee')
+                                <li id="employee_list"><a href="{{route('currency.index')}}">{{__('Manage Currencies')}}</a></li>
+                            @endcan
+                           
+                        </ul>
+                    </li>
+                @endcan
+                @can('view-details-employee')
+                    <li class="has-dropdown {{ (request()->is('usd-taxtables*')) ? 'active' : '' }}">
+                        <a href="#taxtables" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>{{trans('Tax tables')}}</span></a>
+                        <ul id="taxtables" class="collapse list-unstyled ">
+                            @can('view-details-employee')
+                                <li id="usd_tax_table"><a href="{{route('usd-taxtables.index')}}">{{__('USD Tax Table')}}</a></li>
+                            @endcan
+                           
+                        </ul>
+                    </li>
+                @endcan
+                
 
                 @can('customize-setting')
                     <li class="has-dropdown {{ (request()->is('settings*')) ? 'active' : '' }}">
