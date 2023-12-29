@@ -76,6 +76,26 @@
                         </ul>
                     </li>
                 <?php endif; ?>
+                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                    <li class="has-dropdown <?php echo e((request()->is('usd-taxtables*')) ? 'active' : ''); ?>">
+                        <a href="#taxtables" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span><?php echo e(trans('Tax tables')); ?></span></a>
+                        <ul id="taxtables" class="collapse list-unstyled ">
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                                <li id="usd_tax_table"><a href="<?php echo e(route('usd-taxtables.index')); ?>"><?php echo e(__('USD Tax Table')); ?></a></li>
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                                <li id="zwl_tax_table"><a href="<?php echo e(route('usd-taxtables.index')); ?>"><?php echo e(__('ZWL Tax Table')); ?></a></li>
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                                <li id="nssa_tax_table"><a href="<?php echo e(route('nssa-taxtables.index')); ?>"><?php echo e(__('Nssa Tax Table')); ?></a></li>
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-details-employee')): ?>
+                                <li id="zimdef_tax_table"><a href="<?php echo e(route('zimdef-taxtables.index')); ?>"><?php echo e(__('Zimdef Tax Table')); ?></a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+                
 
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('customize-setting')): ?>
                     <li class="has-dropdown <?php echo e((request()->is('settings*')) ? 'active' : ''); ?>">
