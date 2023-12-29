@@ -127,6 +127,7 @@ use App\Http\Controllers\Variables\WarningTypeController;
 use App\Http\Controllers\WarningController;
 use App\Models\User;
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\NssaTableController;
 use App\Http\Controllers\UsdTaxTableController;
 use App\Models\CurrencyRate;
 use Illuminate\Support\Facades\Auth;
@@ -222,6 +223,7 @@ Route::group(['middleware' => ['XSS']], function () {
 
     Route::resource('currency', CurrencyController::class);
     Route::resource('usd-taxtables', UsdTaxTableController::class);
+    Route::resource('nssa-taxtables', NssaTableController::class);
     Route::get('usd-taxtables/delete/{id}', [UsdTaxTableController::class, 'destroy']);
     Route::resource('rate', CurrencyRate::class);
     Route::prefix('staff')->group(function () {
