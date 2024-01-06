@@ -19,10 +19,11 @@
                     <th><?php echo e(__('Allowance Type')); ?></th>
                     <th><?php echo e(__('Allowance Title')); ?></th>
                     <?php if(config('variable.currency_format')=='suffix'): ?>
-                        <th><?php echo e(__('Allowance Amount')); ?> (<?php echo e(config('variable.currency')); ?>)</th>
+                        <th><?php echo e(__('Allowance Amount')); ?> </th>
                     <?php else: ?>
-                        <th>(<?php echo e(config('variable.currency')); ?>) <?php echo e(__('Allowance Amount')); ?></th>
+                        <th> <?php echo e(__('Allowance Amount')); ?></th>
                     <?php endif; ?>
+                    <th><?php echo e(__('Taxable Percentage')); ?></th>
                     <th class="not-exported"><?php echo e(trans('file.action')); ?></th>
                 </tr>
                 </thead>
@@ -62,6 +63,27 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
+                                <label><?php echo e(__('Allowance Currency')); ?> *</label>
+                                <select name="currency_id" id="currency_id" required
+                                        class="form-control">
+                                      <?php 
+                                      $currencies =  App\Models\Currency::get();
+                                      ?>
+                                        <?php if($currencies->isNotEmpty()): ?>
+                                        <?php $__currentLoopData = $currencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cur): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($cur->id); ?>"><?php echo e($cur->name); ?> <?php echo e($cur->symbol); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        <?php endif; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                            <label><?php echo e(__('Deductable percentage')); ?> </label>
+                                <input type="number" name="deductible_amt" id="deductible_amt"
+                                       placeholder=<?php echo e(__('Deductible percentage')); ?>
+
+                                                class="form-control text-left">
+                            </div>
+                            <div class="col-md-6 form-group">
                                 <label><?php echo e(__('Allowance Title')); ?> *</label>
                                 <input type="text" name="allowance_title" id="allowance_title"
                                        placeholder=<?php echo e(__('Allowance Type')); ?>
@@ -82,6 +104,7 @@
 
                                                required class="form-control">
                             </div>
+
 
                             <div class="container">
                                 <br>

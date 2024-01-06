@@ -5,8 +5,7 @@
 
     <div class="mb-3">
         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('set-salary')): ?>
-            <button type="button" class="btn btn-info" name="create_record" id="create_basic_salary_record"><i
-                        class="fa fa-plus"></i><?php echo e(__('Add Basic Salary')); ?></button>
+        <button type="button" class="btn btn-info" name="create_record" id="create_basic_salary_record"><i class="fa fa-plus"></i><?php echo e(__('Add Basic Salary')); ?></button>
         <?php endif; ?>
     </div>
 
@@ -18,9 +17,9 @@
                         <th><?php echo e(__('Month-Year')); ?></th>
                         <th><?php echo e(__('Payslip Type')); ?></th>
                         <?php if(config('variable.currency_format')=='suffix'): ?>
-                            <th><?php echo e(__('Basic Salary')); ?> (<?php echo e(config('variable.currency')); ?>)</th>
+                        <th><?php echo e(__('Basic Salary')); ?> (<?php echo e(config('variable.currency')); ?>)</th>
                         <?php else: ?>
-                            <th>(<?php echo e(config('variable.currency')); ?>) <?php echo e(__('Basic Salary')); ?></th>
+                        <th>(<?php echo e(config('variable.currency')); ?>) <?php echo e(__('Basic Salary')); ?></th>
                         <?php endif; ?>
                         <th class="not-exported"><?php echo e(trans('file.action')); ?></th>
                     </tr>
@@ -49,34 +48,50 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label><?php echo e(__('Month Year')); ?> *</label>
-                                <input class="form-control month_year"  name="month_year" type="text" id="month_year">
+                                <input class="form-control month_year" name="month_year" type="text" id="month_year">
                             </div>
 
                             <div class="col-md-6 form-group">
                                 <label><?php echo e(__('Payslip Type')); ?> *</label>
                                 <select name="payslip_type" id="payslip_type_edit" required class="selectpicker form-control" title="<?php echo e(__('Selecting',['key'=>__('Payslip Type')])); ?>...">
+                                    <!-- <option value="Hourly"><?php echo e(__('Hourly Payslip')); ?></option> -->
+                                    <option value="Daily"> Daily Payslip</option>
+                                    <option value="Weekly"> Weekly Payslip</option>
+                                    <option value="Fortnightly"> Fortnightly Payslip</option>
                                     <option value="Monthly"><?php echo e(__('Monthly Payslip')); ?></option>
-                                    <option value="Hourly"><?php echo e(__('Hourly Payslip')); ?></option>
+                                    <option value="Annually"> Annual Payslip</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label><?php echo e(__('Allowance Currency')); ?> *</label>
+                                <select name="currency_id" id="currency_id" required class="form-control">
+                                    <?php
+                                    $currencies = App\Models\Currency::get();
+                                    ?>
+                                    <?php if($currencies->isNotEmpty()): ?>
+                                    <?php $__currentLoopData = $currencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cur): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($cur->id); ?>"><?php echo e($cur->name); ?> <?php echo e($cur->symbol); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
                                 <?php if(config('variable.currency_format')=='suffix'): ?>
-                                    <label><?php echo e(__('Basic Salary')); ?> (<?php echo e(config('variable.currency')); ?>) *</label>
+                                <label><?php echo e(__('Basic Salary')); ?> *</label>
                                 <?php else: ?>
-                                    <label>(<?php echo e(config('variable.currency')); ?>) <?php echo e(__('Basic Salary')); ?> *</label>
+                                <label> <?php echo e(__('Basic Salary')); ?> *</label>
                                 <?php endif; ?>
 
-                                <input type="text" name="basic_salary" id="basic_salary_edit" placeholder="<?php echo e(__('0.00')); ?>"  class="form-control">
+                                <input type="text" name="basic_salary" id="basic_salary_edit" placeholder="<?php echo e(__('0.00')); ?>" class="form-control">
                             </div>
 
                             <div class="container">
                                 <br><br>
                                 <span class="text-danger"><i></i></span> <br><br>
                                 <div class="form-group" align="center">
-                                    <input type="hidden" name="action" id="basic_salary_action"/>
-                                    <input type="hidden" name="hidden_id" id="basic_salary_hidden_id"/>
-                                    <input type="submit" name="action_button" id="basic_salary_action_button"
-                                           class="btn btn-warning" value=<?php echo e(trans('file.Add')); ?> />
+                                    <input type="hidden" name="action" id="basic_salary_action" />
+                                    <input type="hidden" name="hidden_id" id="basic_salary_hidden_id" />
+                                    <input type="submit" name="action_button" id="basic_salary_action_button" class="btn btn-warning" value=<?php echo e(trans('file.Add')); ?> />
                                 </div>
                             </div>
                         </div>
@@ -105,9 +120,7 @@
                 </div>
             </div>
         </div>
-      </div>
+    </div>
 
 
-</section>
-
-<?php /**PATH C:\xampp\htdocs\payroll\resources\views/employee/salary/basic/index.blade.php ENDPATH**/ ?>
+</section><?php /**PATH C:\xampp\htdocs\payroll\resources\views/employee/salary/basic/index.blade.php ENDPATH**/ ?>
