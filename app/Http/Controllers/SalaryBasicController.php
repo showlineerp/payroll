@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\SalaryBasic;
 use Illuminate\Http\Request;
@@ -71,12 +72,16 @@ class SalaryBasicController extends Controller
                 'month_year' => 'required',
                 'payslip_type' => 'required',
                 'basic_salary' => 'required|numeric',
+                'currency_id' => 'required'
             ]);
 
             if ($validator->fails())
             {
                 return response()->json(['errors' => $validator->errors()->all()]);
             }
+
+            $currency_symbol = Currency::find($request->currency_id)?->symbol;
+
 
             $check_month_year = SalaryBasic::where('month_year',$request->month_year)->where('employee_id',$employee->id)->exists();
             if ($check_month_year==true) {
@@ -91,12 +96,16 @@ class SalaryBasicController extends Controller
             $salary_basic->first_date   = $first_date;
             $salary_basic->payslip_type = $request->payslip_type;
             $salary_basic->basic_salary = $request->basic_salary;
+            $salary_basic->currency_id = $request->currency_id;
+            $salary_basic->currency_symbol = $currency_symbol;
             $salary_basic->save();
 
             $salary_latest = SalaryBasic::where('employee_id',$salary_basic->employee_id)->select('payslip_type','basic_salary')->orderByRaw('DATE_FORMAT(first_date, "%y-%m") DESC')->first();
             $employee = Employee::find($salary_basic->employee_id);
             $employee->payslip_type = $salary_latest->payslip_type;
             $employee->basic_salary = $salary_latest->basic_salary; //Alawys Updated Last Month-Year wise
+            $employee->currency_id = $salary_latest->currency_id;
+            $employee->currency_symbol = $salary_latest->currency_symbol;
             $employee->update();
 
             return response()->json(['success' => __('Data Added successfully.')]);
