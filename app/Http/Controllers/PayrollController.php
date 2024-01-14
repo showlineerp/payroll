@@ -16,9 +16,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
 use App\Http\traits\MonthlyWorkedHours;
+use App\Models\NssaTable;
 use App\Models\SalaryBasic;
+use App\Models\SalaryCommission;
+use App\Models\SalaryDeduction;
+use App\Models\SalaryOtherPayment;
+use App\Models\SalaryOvertime;
+use App\Models\UsdTaxTable;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
-class PayrollController extends Controller {
+class PayrollController extends Controller
+{
 
 	use TotalSalaryTrait;
 	use MonthlyWorkedHours;
@@ -32,227 +41,193 @@ class PayrollController extends Controller {
 		$first_date = date('Y-m-d', strtotime('first day of ' . $selected_date));
 		$last_date = date('Y-m-d', strtotime('last day of ' . $selected_date));
 
-		if ($logged_user->can('view-paylist'))
-		{
-			if (request()->ajax())
-			{
-				$paid_employees = Payslip::where('month_year',$selected_date)->pluck('employee_id');
-				$salary_basic_employees = SalaryBasic::where('first_date','<=',$first_date)->distinct()->pluck('employee_id');
+		if ($logged_user->can('view-paylist')) {
+			if (request()->ajax()) {
+				$paid_employees = Payslip::where('month_year', $selected_date)->pluck('employee_id');
+				$salary_basic_employees = SalaryBasic::where('first_date', '<=', $first_date)->distinct()->pluck('employee_id');
 
-				if (!empty($request->filter_company && $request->filter_department))
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-						{
+				if (!empty($request->filter_company && $request->filter_department)) {
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query)
-						{
+						'allowances' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'commissions'=> function ($query) use ($first_date)
-            			{
-            				$query->where('first_date', $first_date);
-            			},
-						'loans'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date','<=', $first_date)
-							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'deductions'=> function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-						{
+						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
 						},
-						'overtimes'=> function ($query) use ($selected_date)
-						{
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'payslips' => function ($query) use ($selected_date)
-						{
+						'payslips' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'employeeAttendance' => function ($query) use ($first_date, $last_date){
+						'employeeAttendance' => function ($query) use ($first_date, $last_date) {
 							$query->whereBetween('attendance_date', [$first_date, $last_date]);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount')
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount')
 						->where('company_id', $request->filter_company)
 						->where('department_id', $request->filter_department)
-						->whereIntegerInRaw('id',$salary_basic_employees)
-						->whereIntegerNotInRaw('id',$paid_employees)
-                        ->where('is_active',1)
-                        ->where('exit_date',NULL)
+						->whereIntegerInRaw('id', $salary_basic_employees)
+						->whereIntegerNotInRaw('id', $paid_employees)
+						->where('is_active', 1)
+						->where('exit_date', NULL)
 						->get();
-
-				} elseif (!empty($request->filter_company))
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-						{
+				} elseif (!empty($request->filter_company)) {
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query)
-						{
+						'allowances' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'commissions'=> function ($query) use ($first_date)
-            			{
-            				$query->where('first_date', $first_date);
-            			},
-						'loans'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date','<=', $first_date)
-							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'deductions'=> function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-						{
+						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
 						},
-						'overtimes'=> function ($query) use ($selected_date)
-						{
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'payslips' => function ($query) use ($selected_date)
-						{
+						'payslips' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'employeeAttendance' => function ($query) use ($first_date, $last_date){
+						'employeeAttendance' => function ($query) use ($first_date, $last_date) {
 							$query->whereBetween('attendance_date', [$first_date, $last_date]);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount')
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount')
 						->where('company_id', $request->filter_company)
-						->whereIntegerInRaw('id',$salary_basic_employees)
-						->whereIntegerNotInRaw('id',$paid_employees)
-                        ->where('is_active',1)->where('exit_date',NULL)
+						->whereIntegerInRaw('id', $salary_basic_employees)
+						->whereIntegerNotInRaw('id', $paid_employees)
+						->where('is_active', 1)->where('exit_date', NULL)
 						->get();
-				} else
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-						{
+				} else {
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query)
-						{
+						'allowances' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'commissions'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-						'loans'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date','<=', $first_date)
-							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'deductions'=> function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-						{
+						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
 						},
-						'overtimes'=> function ($query) use ($selected_date)
-						{
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'payslips' => function ($query) use ($selected_date)
-						{
+						'payslips' => function ($query) use ($selected_date) {
 							$query->where('month_year', $selected_date);
 						},
-						'employeeAttendance' => function ($query) use ($first_date, $last_date){
+						'employeeAttendance' => function ($query) use ($first_date, $last_date) {
 							$query->whereBetween('attendance_date', [$first_date, $last_date]);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount')
-                        // ->whereIntegerInRaw('id',$salary_basic_employees)
-                        // ->whereIntegerNotInRaw('id',$paid_employees)
-                        ->whereIntegerInRaw('id',$salary_basic_employees)
-						->whereIntegerNotInRaw('id',$paid_employees)
-						->where('is_active',1)
-                        ->where('exit_date',NULL)
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount')
+						// ->whereIntegerInRaw('id',$salary_basic_employees)
+						// ->whereIntegerNotInRaw('id',$paid_employees)
+						->whereIntegerInRaw('id', $salary_basic_employees)
+						->whereIntegerNotInRaw('id', $paid_employees)
+						->where('is_active', 1)
+						->where('exit_date', NULL)
 						->get();
 				}
 
 				return datatables()->of($employees)
-					->setRowId(function ($pay_list)
-					{
+					->setRowId(function ($pay_list) {
 						return $pay_list->id;
 					})
-					->addColumn('employee_name', function ($row)
-					{
+					->addColumn('employee_name', function ($row) {
 						return $row->full_name;
 					})
-					->addColumn('payslip_type', function ($row) use ($first_date)
-					{
-                        foreach ($row->salaryBasic as $salaryBasic) {
-                            if($salaryBasic->first_date <= $first_date)
-                            {
-                                $payslip_type = $salaryBasic->payslip_type; //payslip_type
-                            }
-                        }
+					->addColumn('payslip_type', function ($row) use ($first_date) {
+						foreach ($row->salaryBasic as $salaryBasic) {
+							if ($salaryBasic->first_date <= $first_date) {
+								$payslip_type = $salaryBasic->payslip_type; //payslip_type
+							}
+						}
 						return $payslip_type;
 					})
-					->addColumn('basic_salary', function ($row) use ($first_date)
-					{
-                        foreach ($row->salaryBasic as $salaryBasic) {
-                            if($salaryBasic->first_date <= $first_date)
-                            {
-                                $basicsalary = $salaryBasic->basic_salary; //basic salary
-                            }
-                        }
+					->addColumn('basic_salary', function ($row) use ($first_date) {
+						foreach ($row->salaryBasic as $salaryBasic) {
+							if ($salaryBasic->first_date <= $first_date) {
+								$basicsalary = $salaryBasic->basic_salary; //basic salary
+							}
+						}
 						return $basicsalary;
 					})
-					->addColumn('net_salary', function ($row)  use ($first_date)
-					{
+					->addColumn('net_salary', function ($row)  use ($first_date) {
 						//payslip_type & basic_salary
 						foreach ($row->salaryBasic as $salaryBasic) {
-                            if($salaryBasic->first_date <= $first_date){
-                                $payslip_type = $salaryBasic->payslip_type;
+							if ($salaryBasic->first_date <= $first_date) {
+								$payslip_type = $salaryBasic->payslip_type;
 								$basicsalary = $salaryBasic->basic_salary;
-                            }
-                        }
+							}
+						}
 
-                        //Pension Amount
-                        if ($row->pension_type=="percentage") {
-                            $pension_amount =  ($basicsalary * $row->pension_amount) /100;
-                        } else {
-                            $pension_amount = $row->pension_amount;
-                        }
+						//Pension Amount
+						if ($row->pension_type == "percentage") {
+							$pension_amount =  ($basicsalary * $row->pension_amount) / 100;
+						} else {
+							$pension_amount = $row->pension_amount;
+						}
 
-                        $type              = "getAmount";
+						$type              = "getAmount";
 						$allowance_amount  = $this->allowances($row, $first_date, $type);
 						$deduction_amount  = $this->deductions($row, $first_date, $type);
 
 						//Net Salary
-						if ($payslip_type == 'Monthly'){
+						if ($payslip_type == 'Monthly') {
 							$total_salary = $this->totalSalary($row, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount);
-						}
-						else{
+						} else {
 							$total = 0;
 							$total_hours = $this->totalWorkedHours($row);
 							sscanf($total_hours, '%d:%d', $hour, $min);
-                            //converting in minute
-                            $total += $hour * 60 + $min;
+							//converting in minute
+							$total += $hour * 60 + $min;
 
 
-                            //********** Test *********/
-                            // $total_overtime = 0;
+							//********** Test *********/
+							// $total_overtime = 0;
 							// $total_overtimes = $this->totalOvertimeHours($row);
-                            // sscanf($total_overtimes, '%d:%d', $overtimeHour, $overtimeMin);
+							// sscanf($total_overtimes, '%d:%d', $overtimeHour, $overtimeMin);
 							// $total_overtime += $overtimeHour * 60 + $overtimeMin;
 
-                            // return $total_overtime;
+							// return $total_overtime;
 
-                            //********** Test End*********/
+							//********** Test End*********/
 
-                            $total_salary = $this->totalSalary($row, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount, $total);
-
-
+							$total_salary = $this->totalSalary($row, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount, $total);
 						}
 
 						return $total_salary;
@@ -272,31 +247,24 @@ class PayrollController extends Controller {
 						// }
 
 					})
-					->addColumn('status', function ($row)
-					{
-						foreach ($row->payslips as $payslip)
-						{
+					->addColumn('status', function ($row) {
+						foreach ($row->payslips as $payslip) {
 							$status = $payslip->status;
 
 							return $status;
 						}
 					})
-					->addColumn('action', function ($data)
-					{
-						if (auth()->user()->can('view-paylist'))
-						{
-							if (auth()->user()->can('make-payment'))
-							{
+					->addColumn('action', function ($data) {
+						if (auth()->user()->can('view-paylist')) {
+							if (auth()->user()->can('make-payment')) {
 								$button = '<button type="button" name="view" id="' . $data->id . '" class="details btn btn-primary btn-sm" title="Details"><i class="dripicons-preview"></i></button>';
 								$button .= '&nbsp;&nbsp;';
 								$button .= '<button type="button" name="payment" id="' . $data->id . '" class="generate_payment btn btn-secondary btn-sm" title="generate_payment"><i class="fa fa-money"></i></button>';
-							} else
-							{
+							} else {
 								$button = '';
 							}
 							return $button;
-						} else
-						{
+						} else {
 							return '';
 						}
 					})
@@ -311,68 +279,63 @@ class PayrollController extends Controller {
 	}
 
 
-    // Details
+	// Details
 	public function paySlip(Request $request)
 	{
 		$month_year = $request->filter_month_year;
 		$first_date = date('Y-m-d', strtotime('first day of ' . $month_year));
 		$last_date = date('Y-m-d', strtotime('last day of ' . $month_year));
 
-		$employee = Employee::with(['salaryBasic' => function ($query)
-			{
+		$employee = Employee::with([
+			'salaryBasic' => function ($query) {
 				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'allowances' => function ($query)
-			{
+			'allowances' => function ($query) {
 				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'commissions'=> function ($query) use ($first_date)
-            {
-                $query->where('first_date', $first_date);
-            },
-			'loans'=> function ($query) use ($first_date)
-            {
-                $query->where('first_date','<=', $first_date)
-                ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-            },
-			'deductions'=> function ($query)
-			{
-				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-			},
-			'otherPayments'=> function ($query) use ($first_date)
-			{
+			'commissions' => function ($query) use ($first_date) {
 				$query->where('first_date', $first_date);
 			},
-			'overtimes'=> function ($query) use ($month_year)
-			{
+			'loans' => function ($query) use ($first_date) {
+				$query->where('first_date', '<=', $first_date)
+					->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			},
+			'deductions' => function ($query) {
+				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			},
+			'otherPayments' => function ($query) use ($first_date) {
+				$query->where('first_date', $first_date);
+			},
+			'overtimes' => function ($query) use ($month_year) {
 				$query->where('month_year', $month_year);
 			},
 			'designation', 'department', 'user',
-			'employeeAttendance' => function ($query) use ($first_date, $last_date){
+			'employeeAttendance' => function ($query) use ($first_date, $last_date) {
 				$query->whereBetween('attendance_date', [$first_date, $last_date]);
-			}])
-			->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount', 'designation_id', 'department_id', 'joining_date')
+			}
+		])
+			->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'designation_id', 'department_id', 'joining_date')
 			->findOrFail($request->id);
 
 		//payslip_type && salary_basic
 		foreach ($employee->salaryBasic as $salaryBasic) {
-			if($salaryBasic->first_date <= $first_date){
+			if ($salaryBasic->first_date <= $first_date) {
 				$basic_salary = $salaryBasic->basic_salary;
 				$payslip_type = $salaryBasic->payslip_type;
 			}
 		}
 
-        //Pension Amount
-        if ($employee->pension_type=="percentage") {
-            $pension_amount =  ($basic_salary * $employee->pension_amount) /100.00;
-        } else {
-            $pension_amount = $employee->pension_amount;
-        }
+		//Pension Amount
+		if ($employee->pension_type == "percentage") {
+			$pension_amount =  ($basic_salary * $employee->pension_amount) / 100.00;
+		} else {
+			$pension_amount = $employee->pension_amount;
+		}
 
 
-        $type          = "getArray";
-        $allowances    = $this->allowances($employee, $first_date, $type);
-        $deductions    = $this->deductions($employee, $first_date, $type);
+		$type          = "getArray";
+		$allowances    = $this->allowances($employee, $first_date, $type);
+		$deductions    = $this->deductions($employee, $first_date, $type);
 		$data = [];
 		$data['basic_salary'] = $basic_salary;
 		$data['basic_total']  = $basic_salary;
@@ -383,7 +346,7 @@ class PayrollController extends Controller {
 		$data['overtimes']    = $employee->overtimes;
 		$data['other_payments'] = $employee->otherPayments;
 		$data['pension_type']   = $employee->pension_type;
-        $data['pension_amount'] = $pension_amount;
+		$data['pension_amount'] = $pension_amount;
 
 		$data['employee_id']          = $employee->id;
 		$data['employee_full_name']   = $employee->full_name;
@@ -395,8 +358,7 @@ class PayrollController extends Controller {
 
 		$data['payslip_type'] = $payslip_type;
 
-		if ($payslip_type == 'Hourly')
-		{
+		if ($payslip_type == 'Hourly') {
 			$total = 0;
 			$total_hours_worked = $this->totalWorkedHours($employee);
 			$data['monthly_worked_hours'] = $total_hours_worked;
@@ -420,63 +382,57 @@ class PayrollController extends Controller {
 		$first_date = date('Y-m-d', strtotime('first day of ' . $month_year));
 		$last_date = date('Y-m-d', strtotime('last day of ' . $month_year));
 
-		$employee = Employee::with(['salaryBasic' => function ($query)
-			{
+		$employee = Employee::with([
+			'salaryBasic' => function ($query) {
 				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'allowances' => function ($query)
-			{
+			'allowances' => function ($query) {
 				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'commissions'=> function ($query) use ($first_date)
-            {
-                $query->where('first_date', $first_date);
-            },
-			'loans'=> function ($query) use ($first_date)
-            {
-                $query->where('first_date','<=', $first_date)
-                ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-            },
-			'deductions' => function ($query)
-			{
-				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-			},
-			'otherPayments'=> function ($query) use ($first_date)
-			{
+			'commissions' => function ($query) use ($first_date) {
 				$query->where('first_date', $first_date);
 			},
-			'overtimes'=> function ($query) use ($month_year)
-			{
+			'loans' => function ($query) use ($first_date) {
+				$query->where('first_date', '<=', $first_date)
+					->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			},
+			'deductions' => function ($query) {
+				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			},
+			'otherPayments' => function ($query) use ($first_date) {
+				$query->where('first_date', $first_date);
+			},
+			'overtimes' => function ($query) use ($month_year) {
 				$query->where('month_year', $month_year);
 			},
 			'designation', 'department', 'user',
-			'employeeAttendance' => function ($query) use ($first_date, $last_date){
+			'employeeAttendance' => function ($query) use ($first_date, $last_date) {
 				$query->whereBetween('attendance_date', [$first_date, $last_date]);
-			}])
-			->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'designation_id', 'department_id', 'joining_date','pension_type','pension_amount')
+			}
+		])
+			->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'designation_id', 'department_id', 'joining_date', 'pension_type', 'pension_amount')
 			->findOrFail($request->id);
 
 
 		//payslip_type & basic_salary
 		foreach ($employee->salaryBasic as $salaryBasic) {
-			if($salaryBasic->first_date <= $first_date)
-			{
+			if ($salaryBasic->first_date <= $first_date) {
 				$basic_salary = $salaryBasic->basic_salary;
 				$payslip_type = $salaryBasic->payslip_type;
 			}
 		}
 
-        //Pension Amount
-        if ($employee->pension_type=="percentage") {
-            $pension_amount =  ($basic_salary * $employee->pension_amount) /100;
-        } else {
-            $pension_amount = $employee->pension_amount;
-        }
+		//Pension Amount
+		if ($employee->pension_type == "percentage") {
+			$pension_amount =  ($basic_salary * $employee->pension_amount) / 100;
+		} else {
+			$pension_amount = $employee->pension_amount;
+		}
 
 
 		$type              = "getAmount";
-        $allowance_amount  = $this->allowances($employee, $first_date, $type);
-        $deduction_amount  = $this->deductions($employee, $first_date, $type);
+		$allowance_amount  = $this->allowances($employee, $first_date, $type);
+		$deduction_amount  = $this->deductions($employee, $first_date, $type);
 
 		$data = [];
 		$data['employee']         = $employee->id;
@@ -487,16 +443,14 @@ class PayrollController extends Controller {
 		$data['amount_remaining'] = $employee->loans->sum('amount_remaining');
 		$data['total_deduction']  = $deduction_amount;
 		$data['total_overtime']   = $employee->overtimes->sum('overtime_amount');
-		$data['total_other_payment'] =$employee->otherPayments->sum('other_payment_amount');
+		$data['total_other_payment'] = $employee->otherPayments->sum('other_payment_amount');
 		$data['payslip_type']     = $payslip_type;
 		$data['pension_amount']   = $pension_amount;
 
-		if ($payslip_type == 'Monthly')
-		{
+		if ($payslip_type == 'Monthly') {
 			// $data['total_salary'] = $this->totalSalary($employee); //will be deleted----
 			$data['total_salary'] = $this->totalSalary($employee, $payslip_type, $basic_salary, $allowance_amount, $deduction_amount, $pension_amount);
-		} else
-		{
+		} else {
 			$total = 0;
 			$total_hours = $this->totalWorkedHours($employee);
 			sscanf($total_hours, '%d:%d', $hour, $min);
@@ -514,85 +468,477 @@ class PayrollController extends Controller {
 	{
 		$logged_user = auth()->user();
 
-		if ($logged_user->can('make-payment'))
-		{
+		if ($logged_user->can('make-payment')) {
 			$first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
 
 			DB::beginTransaction();
-				try
-				{
-					$employee = Employee::with(['allowances' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'commissions'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-                        'loans'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date','<=', $first_date)
-                            ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'deductions' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-						'overtimes'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date', $first_date);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount','company_id')
-						->findOrFail($id);
-
-
-                    $type          = "getArray";
-                    $allowances    = $this->allowances($employee, $first_date, $type); //getArray
-                    $deductions    = $this->deductions($employee, $first_date, $type);
-
-					$data = [];
-					$data['payslip_key']    = Str::random('20');
-					$data['payslip_number'] = mt_rand(1000000000,9999999999);
-					$data['payment_type']   = $request->payslip_type;
-					$data['basic_salary']   = $request->basic_salary;
-					$data['allowances']     = $allowances;
-					$data['commissions']    = $employee->commissions;
-					$data['loans']          = $employee->loans;
-					$data['deductions']     = $deductions;
-					$data['overtimes']      = $employee->overtimes;
-					$data['other_payments'] = $employee->otherPayments;
-					$data['month_year']     = $request->month_year;
-					$data['net_salary']     = $request->net_salary;
-					$data['status']         = 1;
-					$data['employee_id']    = $employee->id;
-					$data['hours_worked']   = $request->worked_hours;
-					$data['pension_type']   = $employee->pension_type;
-					$data['pension_amount'] = $request->pension_amount;
-					$data['company_id']     = $employee->company_id;
-
-					if ($data['payment_type'] == NULL) { //No Need This Line
-						return response()->json(['payment_type_error' => __('Please select a payslip-type for this employee.')]);
+			try {
+				$employee = Employee::with([
+					'allowances' => function ($query) {
+						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'commissions' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
+					},
+					'loans' => function ($query) use ($first_date) {
+						$query->where('first_date', '<=', $first_date)
+							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'deductions' => function ($query) {
+						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'otherPayments' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
+					},
+					'overtimes' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
 					}
+				])
+					->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id')
+					->findOrFail($id);
+
+
+				$basic_salary = $request->basic_salary;
+				$allowance_total = 0;
+
+
+				if (!$employee->allowances->isEmpty()) {
+					foreach ($employee->allowances as $item) {
+						if ($item->first_date <= $first_date) {
+							// $allowance_amount = SalaryAllowance::where('month_year',$item->month_year)->where('employee_id',$item->employee_id)->sum('allowance_amount');
+							$allowance_total = 0;
+							$taxable_allowances = 0;
+							foreach ($employee->allowances as $value) {
+								if ($value->first_date <= $first_date) {
+									if ($item->first_date == $value->first_date) {
+										$allowance_total += $value->allowance_amount;
+										if ($value['is_taxable']) {
+											$taxable_allowances += $value['allowance_amount'] * ($value['deductible_amt'] / 100);
+										}
+									}
+								}
+							}
+						}
+					}
+				} else {
+					Log::info("No ");
+				}
+				$deduction_total = 0.00;
+				$allowable_deductions = 0.00;
+				$other_deductions = 0.00;
+				if (!$employee->deductions->isEmpty()) {
+					foreach ($employee->deductions as $item) {
+						if ($item->first_date <= $first_date) {
+							$deduction_total = 0.00;
+							$allowable_deductions = 0.00;
+							$other_deductions = 0.00;
+							foreach ($employee->deductions as $value) {
+								if ($value->first_date <= $first_date) {
+									if ($item->first_date == $value->first_date) {
+										if ($value->deduction_title != 'Zimra Income Tax' && $value->deduction_title != 'Zimra AIDS Levy') {
+											$deduction_total += $value->deduction_amount;
+											if ($value['is_taxable']) {
+												$allowable_deductions += $value['deduction_amount'] * ($value['deductible_amt'] / 100);
+											} else {
+												$other_deductions += $value['deduction_amount'];
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				Log::info('Deduction: ' . $deduction_total);
+				Log::info('Taxable Allowances: ' . $taxable_allowances);
+				Log::info('Allowances: ' . $allowance_total);
+				$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $request->payslip_type);
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'Zimra Income Tax';
+				$data['deduction_amount'] = $zimra_deduction;
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'Zimra AIDS Levy';
+				$data['deduction_amount'] = $zimra_deduction * (0.03);
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+				$gross_salary = $basic_salary +
+					$this->allowances($employee, $first_date, "getAmount")
+					+ SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
+				+SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
+				+SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
+				$nssa = NssaTable::latest()->first();
+				$nssa_payable_contribution = $gross_salary * ($nssa->posb_insuarance / 100);
+				$nssa_payable_contribution = $nssa_payable_contribution > $nssa->insuarance_ceiling ? $nssa->insuarance_ceiling : $nssa_payable_contribution;
+				$APWCS_contribution = $gross_salary * ($nssa->posb_contribution / 100);
+
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
+				$data['deduction_amount'] = $nssa_payable_contribution;
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'NSSA APWCS Contribution';
+				$data['deduction_amount'] = $APWCS_contribution;
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+				$employee = Employee::with([
+					'allowances' => function ($query) {
+						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'commissions' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
+					},
+					'loans' => function ($query) use ($first_date) {
+						$query->where('first_date', '<=', $first_date)
+							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'deductions' => function ($query) {
+						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					},
+					'otherPayments' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
+					},
+					'overtimes' => function ($query) use ($first_date) {
+						$query->where('first_date', $first_date);
+					}
+				])
+					->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id')
+					->findOrFail($id);
+				$type          = "getArray";
+				$allowances    = $this->allowances($employee, $first_date, $type); //getArray
+				$deductions    = $this->deductions($employee, $first_date, $type);
+
+
+
+				$data = [];
+
+				$data['payslip_key']    = Str::random('20');
+				$data['payslip_number'] = mt_rand(1000000000, 9999999999);
+				$data['payment_type']   = $request->payslip_type;
+				$data['basic_salary']   = $request->basic_salary;
+				$data['allowances']     = $allowances;
+				$data['commissions']    = $employee->commissions;
+				$data['loans']          = $employee->loans;
+				$data['deductions']     = $deductions;
+				$data['overtimes']      = $employee->overtimes;
+				$data['other_payments'] = $employee->otherPayments;
+				$data['month_year']     = $request->month_year;
+				$data['net_salary']     = $request->net_salary;
+				$data['status']         = 1;
+				$data['employee_id']    = $employee->id;
+				$data['hours_worked']   = $request->worked_hours;
+				$data['pension_type']   = $employee->pension_type;
+				$data['pension_amount'] = $request->pension_amount;
+				$data['company_id']     = $employee->company_id;
+
+				if ($data['payment_type'] == NULL) { //No Need This Line
+					return response()->json(['payment_type_error' => __('Please select a payslip-type for this employee.')]);
+				}
+
+				$account_balance = DB::table('finance_bank_cashes')->where('id', config('variable.account_id'))->pluck('account_balance')->first();
+
+				if ((int)$account_balance < (int)$request->net_salary) {
+					return response()->json(['error' => 'requested balance is less then available balance']);
+				}
+
+				$new_balance = (int)$account_balance - (int)$request->net_salary;
+
+				$finance_data = [];
+
+				$finance_data['account_id'] = config('variable.account_id');
+				$finance_data['amount'] = $request->net_salary;
+				$finance_data['expense_date'] = now()->format(env('Date_Format'));
+				$finance_data['expense_reference'] = trans('file.Payroll');
+
+
+				FinanceBankCash::whereId($finance_data['account_id'])->update(['account_balance' => $new_balance]);
+
+				$Expense = FinanceTransaction::create($finance_data);
+
+				$finance_data['id'] = $Expense->id;
+
+				FinanceExpense::create($finance_data);
+
+				if ($employee->loans) {
+					foreach ($employee->loans as $loan) {
+						if ($loan->time_remaining == '0') {
+							$amount_remaining = 0;
+							$time_remaining   = 0;
+							$monthly_payable  = 0;
+						} else {
+							$amount_remaining = (int) $loan->amount_remaining - (int) $loan->monthly_payable;
+							$time_remaining   = (int) $loan->time_remaining - 1;
+							$monthly_payable  = $amount_remaining != 0 ? $loan->monthly_payable : 0;
+						}
+						SalaryLoan::whereId($loan->id)->update([
+							'amount_remaining' => $amount_remaining, 'time_remaining' => $time_remaining,
+							'monthly_payable' => $monthly_payable
+						]);
+					}
+					$employee_loan = Employee::with('loans:id,employee_id,loan_title,loan_amount,time_remaining,amount_remaining,monthly_payable')
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type')
+						->findOrFail($id);
+					$data['loans'] = $employee_loan->loans;
+				}
+				Payslip::create($data);
+
+				DB::commit();
+			} catch (Exception $e) {
+				DB::rollback();
+				return response()->json(['error' => $e->getMessage()]);
+			} catch (Throwable $e) {
+				DB::rollback();
+				return response()->json(['error' => $e->getMessage()]);
+			}
+
+			return response()->json(['success' => __('Data Added successfully.')]);
+		}
+		return response()->json(['success' => __('You are not authorized')]);
+	}
+
+
+	//--- Updated ----
+	public function payBulk(Request $request)
+	{
+		$logged_user = auth()->user();
+		if ($logged_user->can('make-bulk_payment')) {
+			if (request()->ajax()) {
+				$first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
+				$employeeArrayId = $request->all_checkbox_id;
+				//$employeesId = Employee::whereIntegerInRaw('id',$employeeArrayId)->whereIntegerNotInRaw('id',$paid_employee)->pluck('id');
+
+				if (!empty($request->filter_company && $request->filter_department)) //No Need
+				{
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'allowances' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'commissions' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id')
+						->where('company_id', $request->filter_company)
+						->where('department_id', $request->filter_department)
+						->whereIntegerInRaw('id', $employeeArrayId)
+						->where('is_active', 1)->where('exit_date', NULL)
+						->get();
+				} elseif (!empty($request->filter_company)) //No Need
+				{
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'allowances' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'commissions' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id')
+						->where('company_id', $request->filter_company)
+						->whereIntegerInRaw('id', $employeeArrayId)
+						->where('is_active', 1)->where('exit_date', NULL)
+						->get();
+				} else {
+					$employees = Employee::with([
+						'salaryBasic' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'allowances' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'commissions' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'loans' => function ($query) use ($first_date) {
+							$query->where('first_date', '<=', $first_date)
+								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'deductions' => function ($query) {
+							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						},
+						'otherPayments' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'overtimes' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						}
+					])
+						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id')
+						->whereIntegerInRaw('id', $employeeArrayId)
+						->where('is_active', 1)->where('exit_date', NULL)
+						->get();
+				}
+
+
+				DB::beginTransaction();
+				try {
+					$total_sum = 0;
+					foreach ($employees as $employee) {
+						//payslip_type & basic_salary
+						foreach ($employee->salaryBasic as $salaryBasic) {
+							if ($salaryBasic->first_date <= $first_date) {
+								$payslip_type = $salaryBasic->payslip_type;
+								$basicsalary = $salaryBasic->basic_salary;
+							}
+						}
+
+						//Pension Amount
+						if ($employee->pension_type == "percentage") {
+							$pension_amount =  ($basicsalary * $employee->pension_amount) / 100;
+						} else {
+							$pension_amount = $employee->pension_amount;
+						}
+
+						$type1          = "getArray";
+						$allowances    = $this->allowances($employee, $first_date, $type1); //getArray
+						$deductions    = $this->deductions($employee, $first_date, $type1);
+
+						$type2             = "getAmount";
+						$allowance_amount  = $this->allowances($employee, $first_date, $type2);
+						$deduction_amount  = $this->deductions($employee, $first_date, $type2);
+
+
+						//Net Salary
+						if ($payslip_type == 'Monthly') {
+							$net_salary = $this->totalSalary($employee, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount);
+
+
+							//New- just store work hours, not calculte with salary
+							$total = 0;
+							$total_hours = $this->totalWorkedHours($employee);
+							sscanf($total_hours, '%d:%d', $hour, $min);
+							//converting in minute
+							$total += $hour * 60 + $min;
+						} else {
+							$total = 0;
+							$total_hours = $this->totalWorkedHours($employee);
+							sscanf($total_hours, '%d:%d', $hour, $min);
+							//converting in minute
+							$total += $hour * 60 + $min;
+							$net_salary = $this->totalSalary($employee, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount, $total);
+						}
+
+						$data = [];
+						$data['payslip_key']    = Str::random('20');
+						$data['payslip_number'] = mt_rand(1000000000, 9999999999);
+						$data['payment_type']   = $payslip_type;
+						$data['basic_salary']   = $basicsalary; //
+						$data['allowances']     = $allowances;
+						$data['commissions']    = $employee->commissions;
+						$data['loans']          = $employee->loans;
+						$data['deductions']     = $deductions;
+						$data['overtimes']      = $employee->overtimes;
+						$data['other_payments'] = $employee->otherPayments;
+						$data['month_year']     = $request->month_year;
+						$data['net_salary']     = $net_salary;
+						$data['status']         = 1;
+						$data['employee_id']    = $employee->id;
+						$data['hours_worked']   = $total_hours; //only for Hourly base employee
+						$data['pension_type']   = $employee->pension_type;
+						$data['pension_amount'] = $pension_amount;
+						$data['company_id']     = $employee->company_id;
+
+						$total_sum = $total_sum + $net_salary;
+
+						if ($employee->loans) {
+							foreach ($employee->loans as $loan) {
+								if ($loan->time_remaining == '0') {
+									$amount_remaining = 0;
+									$time_remaining = 0;
+									$monthly_payable = 0;
+								} else {
+									$amount_remaining = $loan->amount_remaining - $loan->monthly_payable;
+									$time_remaining = $loan->time_remaining - 1;
+									$monthly_payable = $amount_remaining != 0 ? $loan->monthly_payable : 0;
+								}
+								SalaryLoan::whereId($loan->id)->update([
+									'amount_remaining' => $amount_remaining, 'time_remaining' => $time_remaining,
+									'monthly_payable' => $monthly_payable
+								]);
+							}
+							$employee_loan = Employee::with('loans:id,employee_id,loan_title,loan_amount,time_remaining,amount_remaining,monthly_payable')
+								->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type')
+								->findOrFail($employee->id);
+							$data['loans'] = $employee_loan->loans;
+						}
+
+						if ($data['payment_type'] == NULL) { //New
+							return response()->json(['payment_type_error' => __('Please select payslip-type for the employees.')]);
+						}
+						Payslip::create($data);
+					}
+
 
 					$account_balance = DB::table('finance_bank_cashes')->where('id', config('variable.account_id'))->pluck('account_balance')->first();
 
-					if ((int)$account_balance < (int)$request->net_salary)
-					{
-						return response()->json(['error' => 'requested balance is less then available balance']);
+					if ((int)$account_balance < $total_sum) {
+						throw new Exception("requested balance is less then available balance");
 					}
 
-					$new_balance = (int)$account_balance - (int)$request->net_salary;
+					$new_balance = (int)$account_balance - (int)$total_sum;
 
 					$finance_data = [];
 
 					$finance_data['account_id'] = config('variable.account_id');
-					$finance_data['amount'] = $request->net_salary;
-					$finance_data ['expense_date'] = now()->format(env('Date_Format'));
-					$finance_data ['expense_reference'] = trans('file.Payroll');
+					$finance_data['amount'] = $total_sum;
+					$finance_data['expense_date'] = now()->format(env('Date_Format'));
+					$finance_data['expense_reference'] = trans('file.Payroll');
 
 
 					FinanceBankCash::whereId($finance_data['account_id'])->update(['account_balance' => $new_balance]);
@@ -603,409 +949,118 @@ class PayrollController extends Controller {
 
 					FinanceExpense::create($finance_data);
 
-					if ($employee->loans)
-					{
-						foreach ($employee->loans as $loan)
-						{
-							if($loan->time_remaining == '0')
-							{
-								$amount_remaining = 0;
-								$time_remaining   = 0;
-								$monthly_payable  = 0;
-							}
-							else
-							{
-								$amount_remaining = (int) $loan->amount_remaining - (int) $loan->monthly_payable;
-								$time_remaining   = (int) $loan->time_remaining - 1;
-								$monthly_payable  = $amount_remaining !=0 ? $loan->monthly_payable : 0;
-							}
-							SalaryLoan::whereId($loan->id)->update(['amount_remaining' => $amount_remaining, 'time_remaining' => $time_remaining,
-								'monthly_payable' => $monthly_payable]);
-						}
-						$employee_loan = Employee::with('loans:id,employee_id,loan_title,loan_amount,time_remaining,amount_remaining,monthly_payable')
-							->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type')
-							->findOrFail($id);
-						$data['loans'] = $employee_loan->loans;
-					}
-					Payslip::create($data);
-
 					DB::commit();
-
-				} catch (Exception $e)
-				{
+				} catch (Exception $e) {
 					DB::rollback();
-					return response()->json(['error' => $e->getMessage()]);
-				} catch (Throwable $e)
-				{
+					return response()->json(['error' =>  $e->getMessage()]);
+				} catch (Throwable $e) {
 					DB::rollback();
 					return response()->json(['error' => $e->getMessage()]);
 				}
 
-				return response()->json(['success' => __('Data Added successfully.')]);
-		}
-		return response()->json(['success' => __('You are not authorized')]);
-	}
-
-
-	//--- Updated ----
-	public function payBulk(Request $request)
-	{
-		$logged_user = auth()->user();
-		if ($logged_user->can('make-bulk_payment'))
-		{
-			if (request()->ajax())
-			{
-                $first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
-				$employeeArrayId = $request->all_checkbox_id;
-				//$employeesId = Employee::whereIntegerInRaw('id',$employeeArrayId)->whereIntegerNotInRaw('id',$paid_employee)->pluck('id');
-
-				if (!empty($request->filter_company && $request->filter_department)) //No Need
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-                        {
-                            $query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'allowances' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'commissions'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-                        'loans'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date','<=', $first_date)
-                            ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'deductions' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-						'overtimes'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date', $first_date);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount','company_id')
-						->where('company_id', $request->filter_company)
-						->where('department_id', $request->filter_department)
-						->whereIntegerInRaw('id', $employeeArrayId)
-                        ->where('is_active',1)->where('exit_date',NULL)
-						->get();
-				}
-                elseif (!empty($request->filter_company)) //No Need
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-                        {
-                            $query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'allowances' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'commissions'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-                        'loans'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date','<=', $first_date)
-                            ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'deductions' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-						'overtimes'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date', $first_date);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount','company_id')
-						->where('company_id', $request->filter_company)
-						->whereIntegerInRaw('id', $employeeArrayId)
-                        ->where('is_active',1)->where('exit_date',NULL)
-						->get();
-				}
-                else
-				{
-					$employees = Employee::with(['salaryBasic' => function ($query)
-                        {
-                            $query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'allowances' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'commissions'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-                        'loans'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date','<=', $first_date)
-                            ->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-                        },
-                        'deductions' => function ($query)
-						{
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
-						},
-						'otherPayments'=> function ($query) use ($first_date)
-                        {
-                            $query->where('first_date', $first_date);
-                        },
-						'overtimes'=> function ($query) use ($first_date)
-						{
-							$query->where('first_date', $first_date);
-						}])
-						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type','pension_type','pension_amount','company_id')
-						->whereIntegerInRaw('id', $employeeArrayId)
-                        ->where('is_active',1)->where('exit_date',NULL)
-						->get();
-				}
-
-
-				DB::beginTransaction();
-					try
-					{
-						$total_sum = 0;
-						foreach ($employees as $employee)
-						{
-                            //payslip_type & basic_salary
-                            foreach ($employee->salaryBasic as $salaryBasic) {
-                                if($salaryBasic->first_date <= $first_date){
-                                    $payslip_type = $salaryBasic->payslip_type;
-                                    $basicsalary = $salaryBasic->basic_salary;
-                                }
-                            }
-
-                            //Pension Amount
-                            if ($employee->pension_type=="percentage") {
-                                $pension_amount =  ($basicsalary * $employee->pension_amount) /100;
-                            } else {
-                                $pension_amount = $employee->pension_amount;
-                            }
-
-                            $type1          = "getArray";
-                            $allowances    = $this->allowances($employee, $first_date, $type1); //getArray
-                            $deductions    = $this->deductions($employee, $first_date, $type1);
-
-                            $type2             = "getAmount";
-                            $allowance_amount  = $this->allowances($employee, $first_date, $type2);
-                            $deduction_amount  = $this->deductions($employee, $first_date, $type2);
-
-
-							//Net Salary
-                            if ($payslip_type == 'Monthly'){
-                                $net_salary = $this->totalSalary($employee, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount);
-
-
-                                //New- just store work hours, not calculte with salary
-                                $total = 0;
-                                $total_hours = $this->totalWorkedHours($employee);
-                                sscanf($total_hours, '%d:%d', $hour, $min);
-                                //converting in minute
-                                $total += $hour * 60 + $min;
-                            }
-                            else{
-                                $total = 0;
-                                $total_hours = $this->totalWorkedHours($employee);
-                                sscanf($total_hours, '%d:%d', $hour, $min);
-                                //converting in minute
-                                $total += $hour * 60 + $min;
-                                $net_salary = $this->totalSalary($employee, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount, $total);
-                            }
-
-							$data = [];
-							$data['payslip_key']    = Str::random('20');
-							$data['payslip_number'] = mt_rand(1000000000,9999999999);
-							$data['payment_type']   = $payslip_type;
-							$data['basic_salary']   = $basicsalary; //
-							$data['allowances']     = $allowances;
-							$data['commissions']    = $employee->commissions;
-							$data['loans']          = $employee->loans;
-							$data['deductions']     = $deductions;
-							$data['overtimes']      = $employee->overtimes;
-							$data['other_payments'] = $employee->otherPayments;
-							$data['month_year']     = $request->month_year;
-							$data['net_salary']     = $net_salary;
-							$data['status']         = 1;
-							$data['employee_id']    = $employee->id;
-                            $data['hours_worked']   = $total_hours; //only for Hourly base employee
-                            $data['pension_type']   = $employee->pension_type;
-                            $data['pension_amount'] = $pension_amount;
-                            $data['company_id']     = $employee->company_id;
-
-							$total_sum = $total_sum + $net_salary;
-
-							if ($employee->loans)
-							{
-								foreach ($employee->loans as $loan)
-								{
-									if($loan->time_remaining == '0')
-									{
-										$amount_remaining = 0;
-										$time_remaining = 0;
-										$monthly_payable = 0;
-									}
-									else
-									{
-										$amount_remaining = $loan->amount_remaining - $loan->monthly_payable;
-										$time_remaining = $loan->time_remaining - 1;
-										$monthly_payable = $amount_remaining !=0 ? $loan->monthly_payable : 0;
-									}
-									SalaryLoan::whereId($loan->id)->update(['amount_remaining' => $amount_remaining, 'time_remaining' => $time_remaining,
-										'monthly_payable' => $monthly_payable]);
-								}
-								$employee_loan = Employee::with('loans:id,employee_id,loan_title,loan_amount,time_remaining,amount_remaining,monthly_payable')
-									->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type')
-									->findOrFail($employee->id);
-								$data['loans'] = $employee_loan->loans;
-							}
-
-							if ($data['payment_type'] == NULL) { //New
-								return response()->json(['payment_type_error' => __('Please select payslip-type for the employees.')]);
-							}
-							Payslip::create($data);
-						}
-
-
-						$account_balance = DB::table('finance_bank_cashes')->where('id', config('variable.account_id'))->pluck('account_balance')->first();
-
-						if ((int)$account_balance < $total_sum)
-						{
-							throw new Exception("requested balance is less then available balance");
-						}
-
-						$new_balance = (int)$account_balance - (int)$total_sum;
-
-						$finance_data = [];
-
-						$finance_data['account_id'] = config('variable.account_id');
-						$finance_data['amount'] = $total_sum;
-						$finance_data ['expense_date'] = now()->format(env('Date_Format'));
-						$finance_data ['expense_reference'] = trans('file.Payroll');
-
-
-						FinanceBankCash::whereId($finance_data['account_id'])->update(['account_balance' => $new_balance]);
-
-						$Expense = FinanceTransaction::create($finance_data);
-
-						$finance_data['id'] = $Expense->id;
-
-						FinanceExpense::create($finance_data);
-
-						DB::commit();
-					} catch (Exception $e)
-					{
-						DB::rollback();
-						return response()->json(['error' =>  $e->getMessage()]);
-					} catch (Throwable $e)
-					{
-						DB::rollback();
-						return response()->json(['error' => $e->getMessage()]);
-					}
-
-					return response()->json(['success' => __('Paid Successfully')]);
+				return response()->json(['success' => __('Paid Successfully')]);
 			}
 		}
 
 		return response()->json(['error' => __('Error')]);
 	}
 
-    protected function allowances($employee, $first_date, $type)
-    {
-        if ($type=="getArray") {
-            if (!$employee->allowances->isEmpty()) {
-                foreach($employee->allowances as $item) {
-                    if($item->first_date <= $first_date){
-                        $allowances = array();
-                        foreach($employee->allowances as $key => $value) {
-                            if($value->first_date <= $first_date){
-                                //$allowances = array();
-                                if ($item->first_date == $value->first_date) {
-                                    $allowances[] =  $employee->allowances[$key];
-                                }
-                            }
-                        }
+	protected function allowances($employee, $first_date, $type)
+	{
+		if ($type == "getArray") {
+			if (!$employee->allowances->isEmpty()) {
+				foreach ($employee->allowances as $item) {
+					if ($item->first_date <= $first_date) {
+						$allowances = array();
+						foreach ($employee->allowances as $key => $value) {
+							if ($value->first_date <= $first_date) {
+								//$allowances = array();
+								if ($item->first_date == $value->first_date) {
+									$allowances[] =  $employee->allowances[$key];
+								}
+							}
+						}
+					}
+				}
+			} else {
+				$allowances = [];
+			}
+			return $allowances;
+		} elseif ($type == "getAmount") {
+			$allowance_amount = 0;
+			if (!$employee->allowances->isEmpty()) {
+				foreach ($employee->allowances as $item) {
+					if ($item->first_date <= $first_date) {
+						// $allowance_amount = SalaryAllowance::where('month_year',$item->month_year)->where('employee_id',$item->employee_id)->sum('allowance_amount');
+						$allowance_amount = 0;
+						foreach ($employee->allowances as $value) {
+							if ($value->first_date <= $first_date) {
+								if ($item->first_date == $value->first_date) {
+									$allowance_amount += $value->allowance_amount;
+								}
+							}
+						}
+					}
+				}
+			}
 
-                    }
-                }
-            }else {
-                $allowances = [];
-            }
-            return $allowances;
-        }
-        elseif ($type=="getAmount") {
-            $allowance_amount = 0;
-            if (!$employee->allowances->isEmpty()) {
-                foreach($employee->allowances as $item) {
-                    if($item->first_date <= $first_date){
-                        // $allowance_amount = SalaryAllowance::where('month_year',$item->month_year)->where('employee_id',$item->employee_id)->sum('allowance_amount');
-                        $allowance_amount = 0;
-                        foreach($employee->allowances as $value) {
-                            if($value->first_date <= $first_date){
-                                if ($item->first_date == $value->first_date) {
-                                    $allowance_amount += $value->allowance_amount;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+			return $allowance_amount;
+		}
+	}
 
-            return $allowance_amount;
-        }
+	protected function deductions($employee, $first_date, $type)
+	{
+		if ($type == "getAmount") {
+			$deduction_amount = 0;
+			if (!$employee->deductions->isEmpty()) {
+				foreach ($employee->deductions as $item) {
+					if ($item->first_date <= $first_date) {
+						$deduction_amount = 0;
+						foreach ($employee->deductions as $value) {
+							if ($value->first_date <= $first_date) {
+								if ($item->first_date == $value->first_date) {
+									$deduction_amount += $value->deduction_amount;
+								}
+							}
+						}
+					}
+				}
+			}
+			return $deduction_amount;
+		} elseif ($type == "getArray") {
+			if (!$employee->deductions->isEmpty()) {
+				foreach ($employee->deductions as $item) {
+					if ($item->first_date <= $first_date) {
+						$deductions = array();
+						foreach ($employee->deductions as $key => $value) {
+							if ($value->first_date <= $first_date) {
+								if ($item->first_date == $value->first_date) {
+									$deductions[] =  $employee->deductions[$key];
+								}
+							}
+						}
+					}
+				}
+			} else {
+				$deductions = [];
+			}
+			return $deductions;
+		}
+	}
+	public function calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $tax_type)
+	{
+		$tax_payable_amnt = ($basic_salary +  $taxable_allowances) - $other_deductions - $allowable_deductions;
+		$taxTable = UsdTaxTable::where('table_type', $tax_type)
+			->where('lower_range', '<=', $tax_payable_amnt)
+			->where(function ($query) use ($tax_payable_amnt) {
+				$query->where('upper_range', '>=', $tax_payable_amnt)
+					->orWhere('upper_range', -1);
+			})
+			->first();
+		Log::info("Range: " . $tax_payable_amnt);
 
-    }
-
-    protected function deductions($employee, $first_date ,$type)
-    {
-        if ($type=="getAmount") {
-            $deduction_amount = 0;
-            if (!$employee->deductions->isEmpty()) {
-                foreach($employee->deductions as $item) {
-                    if($item->first_date <= $first_date){
-                        $deduction_amount = 0;
-                        foreach($employee->deductions as $value) {
-                            if($value->first_date <= $first_date){
-                                if ($item->first_date == $value->first_date) {
-                                    $deduction_amount += $value->deduction_amount;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return $deduction_amount;
-        }
-        elseif($type=="getArray") {
-            if (!$employee->deductions->isEmpty()) {
-                foreach($employee->deductions as $item) {
-                    if($item->first_date <= $first_date){
-                        $deductions = array();
-                        foreach($employee->deductions as $key => $value) {
-                            if($value->first_date <= $first_date){
-                                if ($item->first_date == $value->first_date) {
-                                    $deductions[] =  $employee->deductions[$key];
-                                }
-                            }
-                        }
-                    }
-                }
-            }else {
-                $deductions = [];
-            }
-            return $deductions;
-        }
-    }
+		if ($taxTable) {
+			return $zimra_tax = ($tax_payable_amnt * $taxTable->multiply_by / 100) -  $taxTable->deduct;
+		}
+	}
 }
-
-
