@@ -5,8 +5,7 @@
 
     <div class="mb-3">
         @can('set-salary')
-            <button type="button" class="btn btn-info" name="create_record" id="create_basic_salary_record"><i
-                        class="fa fa-plus"></i>{{__('Add Basic Salary')}}</button>
+        <button type="button" class="btn btn-info" name="create_record" id="create_basic_salary_record"><i class="fa fa-plus"></i>{{__('Add Basic Salary')}}</button>
         @endcan
     </div>
 
@@ -18,9 +17,9 @@
                         <th>{{__('Month-Year')}}</th>
                         <th>{{__('Payslip Type')}}</th>
                         @if(config('variable.currency_format')=='suffix')
-                            <th>{{__('Basic Salary')}} ({{config('variable.currency')}})</th>
+                        <th>{{__('Basic Salary')}} ({{config('variable.currency')}})</th>
                         @else
-                            <th>({{config('variable.currency')}}) {{__('Basic Salary')}}</th>
+                        <th>({{config('variable.currency')}}) {{__('Basic Salary')}}</th>
                         @endif
                         <th class="not-exported">{{trans('file.action')}}</th>
                     </tr>
@@ -49,34 +48,50 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label>{{__('Month Year')}} *</label>
-                                <input class="form-control month_year"  name="month_year" type="text" id="month_year">
+                                <input class="form-control month_year" name="month_year" type="text" id="month_year">
                             </div>
 
                             <div class="col-md-6 form-group">
                                 <label>{{__('Payslip Type')}} *</label>
                                 <select name="payslip_type" id="payslip_type_edit" required class="selectpicker form-control" title="{{__('Selecting',['key'=>__('Payslip Type')])}}...">
+                                    <!-- <option value="Hourly">{{__('Hourly Payslip')}}</option> -->
+                                    <option value="Daily"> Daily Payslip</option>
+                                    <option value="Weekly"> Weekly Payslip</option>
+                                    <option value="Fortnightly"> Fortnightly Payslip</option>
                                     <option value="Monthly">{{__('Monthly Payslip')}}</option>
-                                    <option value="Hourly">{{__('Hourly Payslip')}}</option>
+                                    <option value="Annually"> Annual Payslip</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>{{__('Allowance Currency')}} *</label>
+                                <select name="currency_id" id="currency_id" required class="form-control">
+                                    @php
+                                    $currencies = App\Models\Currency::get();
+                                    @endphp
+                                    @if ($currencies->isNotEmpty())
+                                    @foreach($currencies as $cur)
+                                    <option value="{{$cur->id}}">{{$cur->name }} {{ $cur->symbol }}</option>
+                                    @endforeach
+                                    @endif
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
                                 @if(config('variable.currency_format')=='suffix')
-                                    <label>{{__('Basic Salary')}} ({{config('variable.currency')}}) *</label>
+                                <label>{{__('Basic Salary')}} *</label>
                                 @else
-                                    <label>({{config('variable.currency')}}) {{__('Basic Salary')}} *</label>
+                                <label> {{__('Basic Salary')}} *</label>
                                 @endif
 
-                                <input type="text" name="basic_salary" id="basic_salary_edit" placeholder="{{__('0.00')}}"  class="form-control">
+                                <input type="text" name="basic_salary" id="basic_salary_edit" placeholder="{{__('0.00')}}" class="form-control">
                             </div>
 
                             <div class="container">
                                 <br><br>
                                 <span class="text-danger"><i></i></span> <br><br>
                                 <div class="form-group" align="center">
-                                    <input type="hidden" name="action" id="basic_salary_action"/>
-                                    <input type="hidden" name="hidden_id" id="basic_salary_hidden_id"/>
-                                    <input type="submit" name="action_button" id="basic_salary_action_button"
-                                           class="btn btn-warning" value={{trans('file.Add')}} />
+                                    <input type="hidden" name="action" id="basic_salary_action" />
+                                    <input type="hidden" name="hidden_id" id="basic_salary_hidden_id" />
+                                    <input type="submit" name="action_button" id="basic_salary_action_button" class="btn btn-warning" value={{trans('file.Add')}} />
                                 </div>
                             </div>
                         </div>
@@ -105,8 +120,7 @@
                 </div>
             </div>
         </div>
-      </div>
+    </div>
 
 
 </section>
-

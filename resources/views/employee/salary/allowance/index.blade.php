@@ -19,10 +19,11 @@
                     <th>{{__('Allowance Type')}}</th>
                     <th>{{__('Allowance Title')}}</th>
                     @if(config('variable.currency_format')=='suffix')
-                        <th>{{__('Allowance Amount')}} ({{config('variable.currency')}})</th>
+                        <th>{{__('Allowance Amount')}} </th>
                     @else
-                        <th>({{config('variable.currency')}}) {{__('Allowance Amount')}}</th>
+                        <th> {{__('Allowance Amount')}}</th>
                     @endif
+                    <th>{{__('Taxable Percentage')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
                 </thead>
@@ -62,6 +63,26 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
+                                <label>{{__('Allowance Currency')}} *</label>
+                                <select name="currency_id" id="currency_id" required
+                                        class="form-control">
+                                      @php 
+                                      $currencies =  App\Models\Currency::get();
+                                      @endphp
+                                        @if ($currencies->isNotEmpty())
+                                        @foreach($currencies as $cur)
+                                        <option value="{{$cur->id}}">{{$cur->name }} {{ $cur->symbol }}</option>
+                                        @endforeach
+                                        @endif
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                            <label>{{ __('Deductable percentage') }} </label>
+                                <input type="number" name="deductible_amt" id="deductible_amt"
+                                       placeholder={{__('Deductible percentage')}}
+                                                class="form-control text-left">
+                            </div>
+                            <div class="col-md-6 form-group">
                                 <label>{{__('Allowance Title')}} *</label>
                                 <input type="text" name="allowance_title" id="allowance_title"
                                        placeholder={{__('Allowance Type')}}
@@ -79,6 +100,7 @@
                                        placeholder={{__('Allowance Amount')}}
                                                required class="form-control">
                             </div>
+
 
                             <div class="container">
                                 <br>

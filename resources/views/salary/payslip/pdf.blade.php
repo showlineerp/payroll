@@ -92,20 +92,25 @@
         </table>
     </div>
     <hr>
+    
 
-    <div class="row">
-        <div class="col-xs-12 table-responsive">
+    <table class="w-100">
+        <tr>
+
+  <td>
+        <div class="table-responsive mr-0">
             <table class="table table-bordered text-center">
 
                 <thead>
                 <tr>
-                    <th id="heading" colspan="2">{{trans('file.Earnings')}}</th>
+                    <th id="heading" colspan="3">{{trans('file.Earnings')}}</th>
                 </tr>
                 </thead>
                 <thead>
                 <tr>
                     <th id="normal-heading">{{trans('file.Description')}}</th>
-                    <th id="normal-heading">{{trans('file.Amount')}}</th>
+                    <th id="normal-heading">{{trans('Amount USD')}}</th>
+                    <th id="normal-heading">{{trans('Amount ZWL')}}</th>
                 </tr>
                 </thead>
                 @php
@@ -121,17 +126,20 @@
                 <tr>
                     @if($payment_type == 'Monthly')
                         <td class="py-3">{{__('Basic Salary')}}</td>
-                        <td>{{$basic_salary}}</td>
+                        <td>${{$basic_salary}}</td>
+                        <td>ZWL{{$basic_salary}}</td>
                     @else
                         <td class="py-3">{{__('Basic Salary')}} ({{__('Total')}})</td>
-                        <td>{{$total_earnings}}</td>
+                        <td>${{$total_earnings}}</td>
+                        <td>ZWL{{$total_earnings}}</td>
                     @endif
                 </tr>
                 @if($allowances)
                     @foreach($allowances as $allowance)
                         <tr>
                             <td class="py-3">{{$allowance['allowance_title']}}</td>
-                            <td>{{$allowance['allowance_amount']}}</td>
+                            <td>${{$allowance['allowance_amount']}}</td>
+                            <td>ZWL{{$allowance['allowance_amount']}}</td>
                         </tr>
                         @php
                             $total_earnings = $total_earnings + $allowance['allowance_amount'] ;
@@ -143,7 +151,8 @@
                     @foreach($commissions as $commission)
                         <tr>
                             <td class="py-3">{{$commission['commission_title']}}</td>
-                            <td>{{$commission['commission_amount']}}</td>
+                            <td>${{$commission['commission_amount']}}</td>
+                            <td>ZWL{{$commission['commission_amount']}}</td>
                         </tr>
                         @php
                             $total_earnings = $total_earnings + $commission['commission_amount'] ;
@@ -155,7 +164,8 @@
                     @foreach($other_payments as $other_payment)
                         <tr>
                             <td class="py-3">{{$other_payment['other_payment_title']}}</td>
-                            <td>{{$other_payment['other_payment_amount']}}</td>
+                            <td>${{$other_payment['other_payment_amount']}}</td>
+                            <td>ZWL{{$other_payment['other_payment_amount']}}</td>
                         </tr>
                         @php
                             $total_earnings = $total_earnings + $other_payment['other_payment_amount'] ;
@@ -167,7 +177,9 @@
                     @foreach($overtimes as $overtime)
                         <tr>
                             <td class="py-3">{{$overtime['overtime_title']}}</td>
-                            <td>{{$overtime['overtime_amount']}}</td>
+
+                            <td>${{$overtime['overtime_amount']}}</td>
+                            <td>ZWL{{$overtime['overtime_amount']}}</td>
                         </tr>
                         @php
                             $total_earnings = $total_earnings + $overtime['overtime_amount'] ;
@@ -180,31 +192,31 @@
                     @if(config('variable.currency_format') =='suffix')
                         <td id="total_earnings">{{$total_earnings}} <span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span></td>
                     @else
-                        <td id="total_earnings"><span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span> {{$total_earnings}} </td>
+                        <td id="total_earnings">$ {{$total_earnings}} </td>
+                        <td id="total_earnings">ZWL {{$total_earnings}} </td>
+
                     @endif
                 </tr>
 
 
             </table>
         </div>
+                </td>
+        <td>
         <!-- /.col -->
-    </div>
-    <hr>
-
-
-    <div class="row">
-        <div class="col-xs-12 table-responsive">
+        <div class="table-responsive ml-0">
             <table class="table table-bordered text-center">
 
                 <thead>
                 <tr>
-                    <th id="heading" colspan="2">{{trans('file.Deductions')}}</th>
+                    <th id="heading" colspan="3">{{trans('file.Deductions')}}</th>
                 </tr>
                 </thead>
                 <thead>
                 <tr>
                     <th id="normal-heading">{{trans('file.Description')}}</th>
-                    <th id="normal-heading">{{trans('file.Amount')}}</th>
+                    <th id="normal-heading">{{trans('Amount USD')}}</th>
+                    <th id="normal-heading">{{trans('Amount ZWL')}}</th>
                 </tr>
                 </thead>
 
@@ -216,7 +228,8 @@
                     @foreach($loans as $loan)
                         <tr>
                             <td class="py-3">{{$loan['loan_title']}}</td>
-                            <td>{{$loan['monthly_payable']}}</td>
+                            <td>${{$loan['monthly_payable']}}</td>
+                            <td>ZWL{{$loan['monthly_payable']}}</td>
                         </tr>
                         @php
                             $total_deductions = $total_deductions + $loan['monthly_payable'] ;
@@ -228,7 +241,8 @@
                     @foreach($deductions as $deduction)
                         <tr>
                             <td class="py-3">{{$deduction['deduction_title']}}</td>
-                            <td>{{$deduction['deduction_amount']}}</td>
+                            <td>${{$deduction['deduction_amount']}}</td>
+                            <td>ZWL{{$deduction['deduction_amount']}}</td>
                         </tr>
                         @php
                             $total_deductions = $total_deductions + $deduction['deduction_amount'] ;
@@ -238,7 +252,8 @@
 
                     <tr>
                         <td class="py-3">{{__('Pension Amount')}}</td>
-                        <td>{{$pension_amount}}</td>
+                        <td>${{$pension_amount}}</td>
+                        <td>ZWL{{$pension_amount}}</td>
                     </tr>
 
                     @php
@@ -252,19 +267,36 @@
                     @if(config('variable.currency_format') =='suffix')
                         <td id="total_deductions">{{$total_deductions}} <span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span></td>
                     @else
-                        <td id="total_deductions"><span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span> {{$total_deductions}} </td>
+                        <td id="total_deductions"> ${{$total_deductions}} </td>
+                        <td id="total_deductions"> ZWL{{$total_deductions}} </td>
                     @endif
                 </tr>
 
 
             </table>
-        </div>
-        <!-- /.col -->
     </div>
+  
+                </td>
+    </tr>
+                </table>
     @if(config('variable.currency_format') =='suffix')
         <p class="text-danger">{{__('Total Paid')}} : <strong>{{$net_salary}} <span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span></strong></p>
     @else
-        <p class="text-danger">{{__('Total Paid')}} :<span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span> <strong>{{$net_salary}}</strong></p>
+    <table>
+
+    
+    <tr>
+        <td>
+        <p class="text-danger">{{__('Total Paid USD')}} : $ <strong>{{$net_salary}}</strong></p>
+       
+        </td>
+        <td>
+        <p class="text-danger px-3">{{__('Total Paid ZWL')}} : ZWL <strong>{{$net_salary}}</strong></p>
+        </td>
+
+    </tr>
+    </table>
+      
     @endif
 
 

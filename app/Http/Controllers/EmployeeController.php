@@ -9,6 +9,7 @@ use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Http\traits\LeaveTypeDataManageTrait;
 use App\Imports\UsersImport;
+use App\Models\Currency;
 use App\Models\office_shift;
 use App\Models\QualificationEducationLevel;
 use App\Models\QualificationLanguage;
@@ -314,6 +315,8 @@ class EmployeeController extends Controller
                 $data['attendance_type'] = $request->attendance_type; //new
                 $data['joining_date'] = $request->joining_date; //new
                 $data['is_active'] = 1;
+                $data['salary_type'] = $request->salary_type;
+                $data['employee_grade'] = $request->employee_grade;
 
                 $user = [];
                 $user['first_name'] = $request->first_name;
@@ -658,8 +661,9 @@ class EmployeeController extends Controller
     public function setSalary(Employee $employee)
     {
         $logged_user = auth()->user();
+        $currencies = Currency::get();
         if ($logged_user->can('modify-details-employee')) {
-            return view('employee.salary.index', compact('employee'));
+            return view('employee.salary.index', compact('employee', 'currencies'));
         }
 
         return response()->json(['success' => __('You are not authorized')]);

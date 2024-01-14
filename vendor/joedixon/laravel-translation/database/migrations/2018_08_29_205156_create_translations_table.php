@@ -13,17 +13,17 @@ class CreateTranslationsTable extends Migration
      */
     public function up()
     {
-        Schema::connection(config('translation.database.connection'))
-            ->create(config('translation.database.translations_table'), function (Blueprint $table) {
-                $table->increments('id');
-                $table->unsignedInteger('language_id');
-                $table->foreign('language_id')->references('id')
-                    ->on(config('translation.database.languages_table'));
-                $table->string('group')->nullable();
-                $table->text('key');
-                $table->text('value')->nullable();
-                $table->timestamps();
-            });
+        // Schema::connection(config('translation.database.connection'))
+        //     ->create(config('translation.database.translations_table'), function (Blueprint $table) {
+        //         $table->increments('id');
+        //         $table->unsignedInteger('language_id');
+        //         $table->foreign('language_id')->references('id')
+        //             ->on(config('translation.database.languages_table'));
+        //         $table->string('group')->nullable();
+        //         $table->text('key');
+        //         $table->text('value')->nullable();
+        //         $table->timestamps();
+        //     });
     }
 
     /**

@@ -126,6 +126,11 @@ use App\Http\Controllers\Variables\VariableMethodController;
 use App\Http\Controllers\Variables\WarningTypeController;
 use App\Http\Controllers\WarningController;
 use App\Models\User;
+use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\NssaTableController;
+use App\Http\Controllers\UsdTaxTableController;
+use App\Http\Controllers\ZimdefTableController;
+use App\Models\CurrencyRate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -214,6 +219,16 @@ Route::group(['middleware' => ['XSS']], function () {
     Route::post('/assign_role/{user}', [AssignRoleController::class, 'update'])->name('assign_role');
     Route::post('/mass_assign', [AssignRoleController::class, 'mass_update'])->name('mass_assign_role');
 
+
+    //Currencies 
+
+    Route::resource('currency', CurrencyController::class);
+    Route::resource('usd-taxtables', UsdTaxTableController::class);
+    Route::resource('nssa-taxtables', NssaTableController::class);
+    Route::resource('zimdef-taxtables', ZimdefTableController::class);
+
+    Route::get('usd-taxtables/delete/{id}', [UsdTaxTableController::class, 'destroy']);
+    Route::resource('rate', CurrencyRate::class);
     Route::prefix('staff')->group(function () {
 
         Route::prefix('employees')->group(function () {

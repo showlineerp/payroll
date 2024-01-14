@@ -1,3 +1,4 @@
+
 <?php $__env->startSection('content'); ?>
 
 
@@ -264,6 +265,22 @@
                                     <option value="general"><?php echo e(__('General')); ?></option>
                                     <option value="ip_based"><?php echo e(__('IP Based')); ?></option>
                                 </select>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label><?php echo e(__('Salary Type')); ?> *</label>
+                                <select name="salary_type" id="salary_type" required class="selectpicker form-control" title="<?php echo e(__('Selecting',['key'=>__('Payslip Type')])); ?>...">
+                                    <!-- <option value="Hourly"><?php echo e(__('Hourly Payslip')); ?></option> -->
+                                    <option value="Daily"> Daily Payslip</option>
+                                    <option value="Weekly"> Weekly Payslip</option>
+                                    <option value="Fortnightly"> Fortnightly Payslip</option>
+                                    <option value="Monthly"><?php echo e(__('Monthly Payslip')); ?></option>
+                                    <option value="Annually"> Annual Payslip</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="text-bold"><?php echo e(__('Employee Grade')); ?> <span class="text-danger">*</span></label>
+                                <input type="text" name="employee_grade" id="employee_grade" class="form-control ">
                             </div>
 
                             <div class="col-md-6 form-group">
