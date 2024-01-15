@@ -116,33 +116,38 @@
                 @php
                     if ($payment_type == 'Monthly')
                     {
-                        $total_earnings = $basic_salary;
+                        $total_earnings =  $currency_symbol == "$" || is_null($currency_symbol) ? $basic_salary : 0;
+                        $total_earnings_zwl =  $currency_symbol == "ZWL"  ? $basic_salary : 0;
+
+
                     }
                     else
                     {
-                        $total_earnings = $hours_amount;
+                        $total_earnings = $currency_symbol == "$" || is_null($currency_symbol) ? $hours_amount : 0;
+                        $total_earnings_zwl = $currency_symbol == "ZWL" ? $hours_amount : 0;
                     }
                 @endphp
                 <tr>
                     @if($payment_type == 'Monthly')
                         <td class="py-3">{{__('Basic Salary')}}</td>
-                        <td>${{$basic_salary}}</td>
-                        <td>ZWL{{$basic_salary}}</td>
+                        <td class="py-3">{{$bs = $currency_symbol =="$" ? '$ '.$basic_salary: '-' }}</td>
+                        <td class="py-3">{{$bs = $currency_symbol =="ZWL" ? 'ZWL '.$basic_salary: '-' }}</td>
                     @else
                         <td class="py-3">{{__('Basic Salary')}} ({{__('Total')}})</td>
-                        <td>${{$total_earnings}}</td>
-                        <td>ZWL{{$total_earnings}}</td>
+                        <td>{{$te = $currency_symbol =="$" ? '$ '.$total_earnings: '-' }}</td>
+                        <td>{{$te = $currency_symbol =="ZWL" ? 'ZWL '.$total_earnings: '-' }}</td>
                     @endif
                 </tr>
                 @if($allowances)
                     @foreach($allowances as $allowance)
                         <tr>
                             <td class="py-3">{{$allowance['allowance_title']}}</td>
-                            <td>${{$allowance['allowance_amount']}}</td>
-                            <td>ZWL{{$allowance['allowance_amount']}}</td>
+                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == '$' ||  is_null($allowance['currency_symbol'])  ? '$ '.$allowance['allowance_amount']: '-' }}</td>
+                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == 'ZWL' ? 'ZWL '.$allowance['allowance_amount']: '-' }}</td>
                         </tr>
                         @php
-                            $total_earnings = $total_earnings + $allowance['allowance_amount'] ;
+                            $total_earnings = $total_earnings + ($allowance['currency_symbol'] == '$' ||  is_null($allowance['currency_symbol'])?  $allowance['allowance_amount'] : 0);
+                            $total_earnings_zwl = $total_earnings_zwl + ($allowance['currency_symbol'] == 'zwl' ?  $allowance['allowance_amount'] : 0);
                         @endphp
                     @endforeach
                 @endif
@@ -151,11 +156,13 @@
                     @foreach($commissions as $commission)
                         <tr>
                             <td class="py-3">{{$commission['commission_title']}}</td>
-                            <td>${{$commission['commission_amount']}}</td>
-                            <td>ZWL{{$commission['commission_amount']}}</td>
+                            <td>{{ $cmn =  $currency_symbol == '$' || is_null($currency_symbol) ? '$ '.$commission['commission_amount'] : '-'}}</td>
+                            <td>{{ $cmn =  $currency_symbol == 'ZWL' ? 'ZWL '.$commission['commission_amount'] : '-'}}</td>
                         </tr>
                         @php
-                            $total_earnings = $total_earnings + $commission['commission_amount'] ;
+                            $total_earnings = $total_earnings + ( $currency_symbol == '$' || is_null($currency_symbol) ? $commission['commission_amount'] : 0) ;
+                            $total_earnings_zwl = $total_earnings_zwl + ( $currency_symbol == 'zwl' ? $commission['commission_amount'] : 0) ;
+
                         @endphp
                     @endforeach
                 @endif
@@ -164,11 +171,13 @@
                     @foreach($other_payments as $other_payment)
                         <tr>
                             <td class="py-3">{{$other_payment['other_payment_title']}}</td>
-                            <td>${{$other_payment['other_payment_amount']}}</td>
-                            <td>ZWL{{$other_payment['other_payment_amount']}}</td>
+                            <td class="py-3">{{ $ot =  $currency_symbol == '$' || is_null($currency_symbol) ? '$ '.$other_payment['other_payment_amount'] : '-' }}</td>
+                            <td class="py-3">{{$ot = $currency_symbol == 'ZWL' ? 'ZWL '.$other_payment['other_payment_amount'] : '-'}}</td>
                         </tr>
                         @php
-                            $total_earnings = $total_earnings + $other_payment['other_payment_amount'] ;
+                            $total_earnings = $total_earnings + ($currency_symbol == '$' || is_null($currency_symbol) ?  $other_payment['other_payment_amount']: 0) ;
+                            $total_earnings_zwl = $total_earnings_zwl + ($currency_symbol == 'zwl' ?  $other_payment['other_payment_amount']: 0) ;
+
                         @endphp
                     @endforeach
                 @endif
@@ -178,24 +187,24 @@
                         <tr>
                             <td class="py-3">{{$overtime['overtime_title']}}</td>
 
-                            <td>${{$overtime['overtime_amount']}}</td>
-                            <td>ZWL{{$overtime['overtime_amount']}}</td>
+                            <td>{{$ovt =  $currency_symbol == '$' || is_null($currency_symbol) ? '$ '.$overtime['overtime_amount'] : '-'}}</td>
+                            <td>{{$ovt = $currency_symbol == 'ZWL' ? 'ZWL '.$overtime['overtime_amount'] : '-' }}</td>
                         </tr>
                         @php
-                            $total_earnings = $total_earnings + $overtime['overtime_amount'] ;
+                            $total_earnings = $total_earnings + ($currency_symbol == '$' || is_null($currency_symbol) ? $overtime['overtime_amount']: 0);
+                            $total_earnings_zwl = $total_earnings_zwl + ($currency_symbol == 'ZWL' ? $overtime['overtime_amount']: 0) ;
+
                         @endphp
                     @endforeach
                 @endif
 
                 <tr>
                     <td class="py-3">Total</td>
-                    @if(config('variable.currency_format') =='suffix')
-                        <td id="total_earnings">{{$total_earnings}} <span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span></td>
-                    @else
-                        <td id="total_earnings">$ {{$total_earnings}} </td>
-                        <td id="total_earnings">ZWL {{$total_earnings}} </td>
+                  
+                        <td id="total_earnings">$ {{ $total_earnings }} </td>
+                        <td id="total_earnings">ZWL {{$total_earnings_zwl}} </td>
 
-                    @endif
+                
                 </tr>
 
 
@@ -222,17 +231,18 @@
 
                 @php
                     $total_deductions = 0;
+                    $total_deductions_zwl = 0;
                 @endphp
 
                 @if($loans)
                     @foreach($loans as $loan)
                         <tr>
                             <td class="py-3">{{$loan['loan_title']}}</td>
-                            <td>${{$loan['monthly_payable']}}</td>
-                            <td>ZWL{{$loan['monthly_payable']}}</td>
+                            <td>{{$ln = $currency_symbol == '$' || is_null($currency_symbol) ? '$ '.$loan['monthly_payable']: '-'}}</td>
+                            <td>{{$ln =  $currency_symbol == '$' ? 'ZWL '.$loan['monthly_payable']: '-'}}</td>
                         </tr>
                         @php
-                            $total_deductions = $total_deductions + $loan['monthly_payable'] ;
+                            $total_deductions = $total_deductions +( $currency_symbol == 'ZWL'? $loan['monthly_payable'] : 0);
                         @endphp
                     @endforeach
                 @endif
@@ -241,35 +251,37 @@
                     @foreach($deductions as $deduction)
                         <tr>
                             <td class="py-3">{{$deduction['deduction_title']}}</td>
-                            <td>${{$deduction['deduction_amount']}}</td>
-                            <td>ZWL{{$deduction['deduction_amount']}}</td>
+                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == '$' ? '$ '.$deduction['deduction_amount'] : '-' }}</td>
+                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == 'ZWL' ? 'ZWL '.$deduction['deduction_amount'] : '-'}}</td>
                         </tr>
                         @php
-                            $total_deductions = $total_deductions + $deduction['deduction_amount'] ;
+                            $total_deductions = $total_deductions + ($deduction['currency_symbol'] == '$' ? $deduction['deduction_amount']: 0) ;
+                            $total_deductions_zwl = $total_deductions_zwl + ($deduction['currency_symbol'] == 'ZWL' ? $deduction['deduction_amount']: 0) ;
+
                         @endphp
                     @endforeach
                 @endif
 
                     <tr>
                         <td class="py-3">{{__('Pension Amount')}}</td>
-                        <td>${{$pension_amount}}</td>
-                        <td>ZWL{{$pension_amount}}</td>
+                        <td class="py-3">{{$pa = $currency_symbol == '$' || is_null($currency_symbol) ? '$ '.$pension_amount : '-' }}</td>
+                        <td class="py-3">{{$pa = $currency_symbol == 'ZWL' || is_null($currency_symbol) ? 'ZWL '.$pension_amount : '-' }}</td>
                     </tr>
 
                     @php
-                        $total_deductions = $total_deductions + $pension_amount;
+                        $total_deductions = $total_deductions + ($currency_symbol == '$' || is_null($currency_symbol) ?  $pension_amount: 0);
+                        $total_deductions_zwl = $total_deductions_zwl + ($currency_symbol == 'ZWL' ?  $pension_amount: 0);
+
                     @endphp
 
 
 
                 <tr>
                     <td class="py-3">{{trans('file.Total')}}</td>
-                    @if(config('variable.currency_format') =='suffix')
-                        <td id="total_deductions">{{$total_deductions}} <span style="font-family: DejaVu Sans; sans-serif;">{{config('variable.currency')}}</span></td>
-                    @else
-                        <td id="total_deductions"> ${{$total_deductions}} </td>
-                        <td id="total_deductions"> ZWL{{$total_deductions}} </td>
-                    @endif
+                  
+                        <td id="total_deductions" class="py-3"> $ {{$total_deductions}} </td>
+                        <td id="total_deductions" class="py-3"> ZWL {{$total_deductions_zwl}} </td>
+          
                 </tr>
 
 
