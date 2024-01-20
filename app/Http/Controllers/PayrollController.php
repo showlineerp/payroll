@@ -498,7 +498,7 @@ class PayrollController extends Controller
 					->findOrFail($id);
 
 
-				$basic_salary = $employee->currency_symbol == 'USD' ?  $request->basic_salary : 0;
+				$basic_salary = $employee->currency_symbol == '$' ?  $request->basic_salary : 0;
 				$basic_salary_zwl = $employee->currency_symbol == 'ZWL' ?  $request->basic_salary : 0;
 
 				$allowance_total = 0;
@@ -597,13 +597,13 @@ class PayrollController extends Controller
 				$data['month_year'] = $request->month_year;
 				$data['first_date'] = $first_date;
 				$data['deduction_title'] = 'Zimra Income Tax';
-				$data['currency_symbol'] = 'USD';
+				$data['currency_symbol'] = '$';
 				$data['deduction_amount'] = $zimra_deduction;
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
-
+				Log::info("I have created Zimra deduction");
 				//ZWL
 				$data = [];
 				$data['employee_id'] = $employee->id;
@@ -616,7 +616,7 @@ class PayrollController extends Controller
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
-
+				Log::info("I have created Zimra zwl deduction");
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
@@ -626,6 +626,7 @@ class PayrollController extends Controller
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				Log::info("I have created Zimra Aids deduction");
 
 				//ZWL
 				$data = [];
@@ -639,6 +640,7 @@ class PayrollController extends Controller
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
+				Log::info("I have created Zimra ADU zwl deduction");
 
 				$gross_salary = $basic_salary +
 					$this->allowances($employee, $first_date, "getAmount")
@@ -646,31 +648,31 @@ class PayrollController extends Controller
 
 				+$employee->currency_symbol == 'ZWL' ? 0 : SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
 				+$employee->currency_symbol == 'ZWL' ? 0 : SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
-				$nssa = NssaTable::where('currency_symbol', 'USD')->latest()->first();
+				$nssa = NssaTable::where('currency_symbol', '$')->latest()->first();
 				$nssa_payable_contribution = $gross_salary * ($nssa->posb_insuarance / 100);
 				$nssa_payable_contribution = $nssa_payable_contribution > $nssa->insuarance_ceiling ? $nssa->insuarance_ceiling : $nssa_payable_contribution;
 				$APWCS_contribution = $gross_salary * ($nssa->posb_contribution / 100);
-
+				Log::info("Gross ". $gross_salary);
 				$gross_salary_zwl = $basic_salary_zwl +
 					$this->allowances($employee, $first_date, "getAmount", 'ZWL')
-					+ $employee->currency_symbol == 'USD' ? 0 : SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
+					+ $employee->currency_symbol == '$' ? 0 : SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
 
-				+$employee->currency_symbol == 'USD' ? 0 : SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
+				+$employee->currency_symbol == '$' ? 0 : SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
 
-				+$employee->currency_symbol == 'USD' ? 0 : SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
+				+$employee->currency_symbol == '$' ? 0 : SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
 
 				$nssa = NssaTable::where('currency_symbol', 'ZWL')->latest()->first();
 				$nssa_payable_contribution_zwl = $gross_salary_zwl * ($nssa->posb_insuarance / 100);
 				$nssa_payable_contribution_zwl = $nssa_payable_contribution > $nssa->insuarance_ceiling ? $nssa->insuarance_ceiling : $nssa_payable_contribution_zwl;
 				$APWCS_contribution_zwl = $gross_salary_zwl * ($nssa->posb_contribution / 100);
-
+				Log::info("Gross  ZWL". $gross_salary);
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
 				$data['first_date'] = $first_date;
 				$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
 				$data['deduction_amount'] = $nssa_payable_contribution;
-				$data['currency_symbol'] = 'USD';
+				$data['currency_symbol'] = '$';
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
@@ -1073,7 +1075,7 @@ class PayrollController extends Controller
 		return response()->json(['error' => __('Error')]);
 	}
 
-	protected function allowances($employee, $first_date, $type, $currency = 'USD')
+	protected function allowances($employee, $first_date, $type, $currency = '$')
 	{
 		if ($type == "getArray") {
 			if (!$employee->allowances->isEmpty()) {
@@ -1109,7 +1111,7 @@ class PayrollController extends Controller
 											$allowance_amount += $value->allowance_amount;
 										}
 									} else {
-										if ($value->currency_symbol == 'USD') {
+										if ($value->currency_symbol == '$') {
 											$allowance_amount += $value->allowance_amount;
 										}
 									}
@@ -1124,7 +1126,7 @@ class PayrollController extends Controller
 		}
 	}
 
-	protected function deductions($employee, $first_date, $type, $currency = 'USD')
+	protected function deductions($employee, $first_date, $type, $currency = '$')
 	{
 		if ($type == "getAmount") {
 			$deduction_amount = 0;
@@ -1140,7 +1142,7 @@ class PayrollController extends Controller
 											$deduction_amount += $value->deduction_amount;
 										}
 									} else {
-										if ($value->currency_symbol == 'USD') {
+										if ($value->currency_symbol == '$') {
 											$deduction_amount += $value->deduction_amount;
 										}
 									}
@@ -1182,6 +1184,7 @@ class PayrollController extends Controller
 			})
 			->first();
 		Log::info("Range: " . $tax_payable_amnt);
+		Log::info("Range: ".$zwl. $tax_payable_amnt);
 
 		if ($taxTable) {
 			return $zimra_tax = ($tax_payable_amnt * $taxTable->multiply_by / 100) -  $taxTable->deduct;
