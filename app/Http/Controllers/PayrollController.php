@@ -591,7 +591,7 @@ class PayrollController extends Controller
 
 				$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $request->payslip_type);
 				$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $request->payslip_type, $zwl = true);
-
+				Log::info("I have created Zimra deduction");
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
@@ -602,7 +602,9 @@ class PayrollController extends Controller
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				Log::info($data);
 				SalaryDeduction::create($data);
+				
 				Log::info("I have created Zimra deduction");
 				//ZWL
 				$data = [];
@@ -1188,6 +1190,9 @@ class PayrollController extends Controller
 
 		if ($taxTable) {
 			return $zimra_tax = ($tax_payable_amnt * $taxTable->multiply_by / 100) -  $taxTable->deduct;
+		}else 
+		{
+			return 0;
 		}
 	}
 }
