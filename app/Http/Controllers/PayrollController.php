@@ -642,7 +642,6 @@ class PayrollController extends Controller
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
-				Log::info("I have created Zimra ADU zwl deduction");
 
 				$gross_salary = $basic_salary +
 					$this->allowances($employee, $first_date, "getAmount")

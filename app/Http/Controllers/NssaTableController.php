@@ -49,7 +49,9 @@ class NssaTableController extends Controller
             $nssa['last_updated_by'] = $logged_user->first_name . ' ' . $logged_user->last_name;
             $nssa['updated_at'] = Carbon::now();
             $nssa['created_at'] = Carbon::now();
+         
             $nssa['currency_symbol'] = Currency::find($request->currency_id)->symbol;
+            $nssa['currency'] =    $nssa['currency_symbol'];
             $insert =  NssaTable::insert($nssa);
             if ($insert) {
                 return  redirect()->back()->with('success', __('Nssa table updated succesfully'));
@@ -101,6 +103,7 @@ class NssaTableController extends Controller
             $nssa['updated_at'] = Carbon::now();
             
             $nssa['currency_symbol'] = Currency::find($request->currency_id)->symbol;
+            $nssa['currency'] =  $nssa['currency_symbol']; 
             $update =  NssaTable::where('id', $nssaTable)->update($nssa);
             if ($update) {
                 return  redirect('nssa-taxtables')->with('success', __('Nssa table updated succesfully'));
