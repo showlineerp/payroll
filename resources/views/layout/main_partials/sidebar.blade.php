@@ -87,7 +87,7 @@
                                 <li id="usd_tax_table"><a href="{{route('usd-taxtables.index')}}">{{__('USD Tax Table')}}</a></li>
                             @endcan
                             @can('view-details-employee')
-                                <li id="zwl_tax_table"><a href="{{route('usd-taxtables.index')}}">{{__('ZWL Tax Table')}}</a></li>
+                                <li id="zwl_tax_table"><a href="{{route('zwl-taxtables.index')}}">{{__('ZWL Tax Table')}}</a></li>
                             @endcan
                             @can('view-details-employee')
                                 <li id="nssa_tax_table"><a href="{{route('nssa-taxtables.index')}}">{{__('Nssa Tax Table')}}</a></li>
