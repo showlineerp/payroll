@@ -279,7 +279,7 @@ class PayslipController extends Controller
 				$query->whereBetween('attendance_date', [$first_date, $last_date]);
 			}
 		])
-			->select('id', 'first_name', 'last_name', 'joining_date', 'contact_no', 'company_id', 'department_id', 'designation_id', 'payslip_type', 'pension_amount')
+			->select('id', 'first_name', 'last_name', 'joining_date', 'contact_no', 'company_id', 'department_id', 'designation_id', 'payslip_type', 'pension_amount', 'currency_symbol', 'currency_id')
 			->where('id', $payslip->employee_id)->first()->toArray();
 
 
