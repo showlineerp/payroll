@@ -498,9 +498,11 @@ class PayrollController extends Controller
 					->findOrFail($id);
 
 
-				$basic_salary = $request->basic_salary;
-				$allowance_total = 0;
+				$basic_salary = $employee->currency_symbol == '$' ?  $request->basic_salary : 0;
+				$basic_salary_zwl = $employee->currency_symbol == 'ZWL' ?  $request->basic_salary : 0;
 
+				$allowance_total = 0;
+				$allowance_total_zwl = 0;
 
 				if (!$employee->allowances->isEmpty()) {
 					foreach ($employee->allowances as $item) {
@@ -508,12 +510,23 @@ class PayrollController extends Controller
 							// $allowance_amount = SalaryAllowance::where('month_year',$item->month_year)->where('employee_id',$item->employee_id)->sum('allowance_amount');
 							$allowance_total = 0;
 							$taxable_allowances = 0;
+							$allowance_total_zwl = 0;
+							$taxable_allowances_zwl = 0;
 							foreach ($employee->allowances as $value) {
 								if ($value->first_date <= $first_date) {
 									if ($item->first_date == $value->first_date) {
-										$allowance_total += $value->allowance_amount;
+										if ($value['currency_symbol'] == 'ZWL') {
+											$allowance_total_zwl += $value->allowance_amount;
+										} else {
+											$allowance_total += $value->allowance_amount;
+										}
+
 										if ($value['is_taxable']) {
-											$taxable_allowances += $value['allowance_amount'] * ($value['deductible_amt'] / 100);
+											if ($value['currency_symbol'] == 'ZWL') {
+												$taxable_allowances += $value['allowance_amount'] * ($value['deductible_amt'] / 100);
+											} else {
+												$taxable_allowances_zwl += $value['allowance_amount'] * ($value['deductible_amt'] / 100);
+											}
 										}
 									}
 								}
@@ -526,21 +539,39 @@ class PayrollController extends Controller
 				$deduction_total = 0.00;
 				$allowable_deductions = 0.00;
 				$other_deductions = 0.00;
+				$deduction_total_zwl = 0.00;
+				$allowable_deductions_zwl = 0.00;
+				$other_deductions_zwl = 0.00;
 				if (!$employee->deductions->isEmpty()) {
 					foreach ($employee->deductions as $item) {
 						if ($item->first_date <= $first_date) {
 							$deduction_total = 0.00;
 							$allowable_deductions = 0.00;
 							$other_deductions = 0.00;
+							$deduction_total_zwl = 0.00;
+							$allowable_deductions_zwl = 0.00;
+							$other_deductions_zwl = 0.00;
 							foreach ($employee->deductions as $value) {
 								if ($value->first_date <= $first_date) {
 									if ($item->first_date == $value->first_date) {
 										if ($value->deduction_title != 'Zimra Income Tax' && $value->deduction_title != 'Zimra AIDS Levy') {
-											$deduction_total += $value->deduction_amount;
-											if ($value['is_taxable']) {
-												$allowable_deductions += $value['deduction_amount'] * ($value['deductible_amt'] / 100);
+											if ($value['currency_symbol'] == 'ZWL') {
+												$deduction_total_zwl += $value->deduction_amount;
 											} else {
-												$other_deductions += $value['deduction_amount'];
+												$deduction_total += $value->deduction_amount;
+											}
+											if ($value['is_taxable']) {
+												if ($value['currency_symbol'] == 'ZWL') {
+													$allowable_deductions_zwl += $value['deduction_amount'] * ($value['deductible_amt'] / 100);
+												} else {
+													$allowable_deductions += $value['deduction_amount'] * ($value['deductible_amt'] / 100);
+												}
+											} else {
+												if ($value['currency_symbol'] == 'ZWL') {
+													$other_deductions_zwl += $value['deduction_amount'];
+												} else {
+													$other_deductions += $value['deduction_amount'];
+												}
 											}
 										}
 									}
@@ -551,20 +582,43 @@ class PayrollController extends Controller
 				}
 
 				Log::info('Deduction: ' . $deduction_total);
-				Log::info('Taxable Allowances: ' . $taxable_allowances);
-				Log::info('Allowances: ' . $allowance_total);
+				Log::info('Deduction: ZWL' . $deduction_total_zwl);
+				Log::info('Taxable Allowances : ' . $taxable_allowances);
+				Log::info('Taxable Allowances ZWL: ' . $taxable_allowances_zwl);
+
+				Log::info('Allowances: USD' . $allowance_total);
+				Log::info('Allowances: ZWL' . $allowance_total_zwl);
+
 				$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $request->payslip_type);
+				$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $request->payslip_type, $zwl = true);
+				Log::info("I have created Zimra deduction");
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
 				$data['first_date'] = $first_date;
 				$data['deduction_title'] = 'Zimra Income Tax';
+				$data['currency_symbol'] = '$';
 				$data['deduction_amount'] = $zimra_deduction;
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				Log::info($data);
 				SalaryDeduction::create($data);
-
+				
+				Log::info("I have created Zimra deduction");
+				//ZWL
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'Zimra Income Tax';
+				$data['deduction_amount'] = $zimra_deduction_zwl;
+				$data['currency_symbol'] = 'ZWL';
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+				Log::info("I have created Zimra zwl deduction");
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
@@ -574,27 +628,70 @@ class PayrollController extends Controller
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				Log::info("I have created Zimra Aids deduction");
+
+				//ZWL
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'Zimra AIDS Levy';
+				$data['deduction_amount'] = $zimra_deduction_zwl * (0.03);
+				$data['currency_symbol'] = 'ZWL';
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
+
 				$gross_salary = $basic_salary +
 					$this->allowances($employee, $first_date, "getAmount")
-					+ SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
-				+SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
-				+SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
-				$nssa = NssaTable::latest()->first();
+					+ $employee->currency_symbol == 'ZWL' ? 0 : SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
+
+				+$employee->currency_symbol == 'ZWL' ? 0 : SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
+				+$employee->currency_symbol == 'ZWL' ? 0 : SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
+				$nssa = NssaTable::where('currency_symbol', '$')->latest()->first();
 				$nssa_payable_contribution = $gross_salary * ($nssa->posb_insuarance / 100);
 				$nssa_payable_contribution = $nssa_payable_contribution > $nssa->insuarance_ceiling ? $nssa->insuarance_ceiling : $nssa_payable_contribution;
 				$APWCS_contribution = $gross_salary * ($nssa->posb_contribution / 100);
+				Log::info("Gross ". $gross_salary);
+				$gross_salary_zwl = $basic_salary_zwl +
+					$this->allowances($employee, $first_date, "getAmount", 'ZWL')
+					+ $employee->currency_symbol == '$' ? 0 : SalaryCommission::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('commission_amount');
 
+				+$employee->currency_symbol == '$' ? 0 : SalaryOtherPayment::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('other_payment_amount');
+
+				+$employee->currency_symbol == '$' ? 0 : SalaryOvertime::where('employee_id', $employee->id)->where('first_date', $first_date)->sum('overtime_amount');
+
+				$nssa = NssaTable::where('currency_symbol', 'ZWL')->latest()->first();
+				$nssa_payable_contribution_zwl = $gross_salary_zwl * ($nssa->posb_insuarance / 100);
+				$nssa_payable_contribution_zwl = $nssa_payable_contribution > $nssa->insuarance_ceiling ? $nssa->insuarance_ceiling : $nssa_payable_contribution_zwl;
+				$APWCS_contribution_zwl = $gross_salary_zwl * ($nssa->posb_contribution / 100);
+				Log::info("Gross  ZWL". $gross_salary);
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
 				$data['first_date'] = $first_date;
 				$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
 				$data['deduction_amount'] = $nssa_payable_contribution;
+				$data['currency_symbol'] = '$';
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
+
+				//ZWL
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
+				$data['deduction_amount'] = $nssa_payable_contribution_zwl;
+				$data['currency_symbol'] = 'ZWL';
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+
 				$data = [];
 				$data['employee_id'] = $employee->id;
 				$data['month_year'] = $request->month_year;
@@ -605,6 +702,20 @@ class PayrollController extends Controller
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
 				SalaryDeduction::create($data);
+
+				//ZWL
+				$data = [];
+				$data['employee_id'] = $employee->id;
+				$data['month_year'] = $request->month_year;
+				$data['first_date'] = $first_date;
+				$data['deduction_title'] = 'NSSA APWCS Contribution';
+				$data['currency_symbol'] = 'ZWL';
+				$data['deduction_amount'] = $APWCS_contribution_zwl;
+				$data['deduction_type'] = 'Other Statutory Deduction';
+				$data['created_at'] = Carbon::now();
+				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+
 				$employee = Employee::with([
 					'allowances' => function ($query) {
 						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
@@ -965,7 +1076,7 @@ class PayrollController extends Controller
 		return response()->json(['error' => __('Error')]);
 	}
 
-	protected function allowances($employee, $first_date, $type)
+	protected function allowances($employee, $first_date, $type, $currency = '$')
 	{
 		if ($type == "getArray") {
 			if (!$employee->allowances->isEmpty()) {
@@ -996,7 +1107,15 @@ class PayrollController extends Controller
 						foreach ($employee->allowances as $value) {
 							if ($value->first_date <= $first_date) {
 								if ($item->first_date == $value->first_date) {
-									$allowance_amount += $value->allowance_amount;
+									if ($currency == 'ZWL') {
+										if ($value->currency_symbol == 'ZWL') {
+											$allowance_amount += $value->allowance_amount;
+										}
+									} else {
+										if ($value->currency_symbol == '$') {
+											$allowance_amount += $value->allowance_amount;
+										}
+									}
 								}
 							}
 						}
@@ -1008,7 +1127,7 @@ class PayrollController extends Controller
 		}
 	}
 
-	protected function deductions($employee, $first_date, $type)
+	protected function deductions($employee, $first_date, $type, $currency = '$')
 	{
 		if ($type == "getAmount") {
 			$deduction_amount = 0;
@@ -1019,7 +1138,15 @@ class PayrollController extends Controller
 						foreach ($employee->deductions as $value) {
 							if ($value->first_date <= $first_date) {
 								if ($item->first_date == $value->first_date) {
-									$deduction_amount += $value->deduction_amount;
+									if ($currency == 'ZWL') {
+										if ($value->currency_symbol == 'ZWL') {
+											$deduction_amount += $value->deduction_amount;
+										}
+									} else {
+										if ($value->currency_symbol == '$') {
+											$deduction_amount += $value->deduction_amount;
+										}
+									}
 								}
 							}
 						}
@@ -1047,7 +1174,7 @@ class PayrollController extends Controller
 			return $deductions;
 		}
 	}
-	public function calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $tax_type)
+	public function calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $tax_type, $zwl = false)
 	{
 		$tax_payable_amnt = ($basic_salary +  $taxable_allowances) - $other_deductions - $allowable_deductions;
 		$taxTable = UsdTaxTable::where('table_type', $tax_type)
@@ -1058,9 +1185,13 @@ class PayrollController extends Controller
 			})
 			->first();
 		Log::info("Range: " . $tax_payable_amnt);
+		Log::info("Range: ".$zwl. $tax_payable_amnt);
 
 		if ($taxTable) {
 			return $zimra_tax = ($tax_payable_amnt * $taxTable->multiply_by / 100) -  $taxTable->deduct;
+		}else 
+		{
+			return 0;
 		}
 	}
 }
