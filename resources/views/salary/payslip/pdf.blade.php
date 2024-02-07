@@ -142,12 +142,12 @@
                     @foreach($allowances as $allowance)
                         <tr>
                             <td class="py-3">{{$allowance['allowance_title']}}</td>
-                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == '$' ||  is_null($allowance['currency_symbol'])  ? '$ '.$allowance['allowance_amount']: '-' }}</td>
-                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == 'ZWL' ? 'ZWL '.$allowance['allowance_amount']: '-' }}</td>
+                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == '$' ||  is_null($allowance['currency_symbol'])  ? '$ '.number_format($allowance['allowance_amount']): '-' }}</td>
+                            <td class="py-3">{{$al_amt = $allowance['currency_symbol'] == 'ZWL' ? 'ZWL '.number_format($allowance['allowance_amount']): '-' }}</td>
                         </tr>
                         @php
                             $total_earnings = $total_earnings + ($allowance['currency_symbol'] == '$' ||  is_null($allowance['currency_symbol'])?  $allowance['allowance_amount'] : 0);
-                            $total_earnings_zwl = $total_earnings_zwl + ($allowance['currency_symbol'] == 'zwl' ?  $allowance['allowance_amount'] : 0);
+                            $total_earnings_zwl = $total_earnings_zwl + ($allowance['currency_symbol'] == 'ZWL' ?  $allowance['allowance_amount'] : 0);
                         @endphp
                     @endforeach
                 @endif
@@ -161,7 +161,7 @@
                         </tr>
                         @php
                             $total_earnings = $total_earnings + ( $currency_symbol == '$' || is_null($currency_symbol) ? $commission['commission_amount'] : 0) ;
-                            $total_earnings_zwl = $total_earnings_zwl + ( $currency_symbol == 'zwl' ? $commission['commission_amount'] : 0) ;
+                            $total_earnings_zwl = $total_earnings_zwl + ( $currency_symbol == 'ZWL' ? $commission['commission_amount'] : 0) ;
 
                         @endphp
                     @endforeach
@@ -176,7 +176,7 @@
                         </tr>
                         @php
                             $total_earnings = $total_earnings + ($currency_symbol == '$' || is_null($currency_symbol) ?  $other_payment['other_payment_amount']: 0) ;
-                            $total_earnings_zwl = $total_earnings_zwl + ($currency_symbol == 'zwl' ?  $other_payment['other_payment_amount']: 0) ;
+                            $total_earnings_zwl = $total_earnings_zwl + ($currency_symbol == 'ZWL' ?  $other_payment['other_payment_amount']: 0) ;
 
                         @endphp
                     @endforeach
@@ -201,8 +201,8 @@
                 <tr>
                     <td class="py-3">Total</td>
                   
-                        <td id="total_earnings">$ {{ $total_earnings }} </td>
-                        <td id="total_earnings">ZWL {{$total_earnings_zwl}} </td>
+                        <td id="total_earnings py-3">$ {{ number_format($total_earnings) }} </td>
+                        <td id="total_earnings py-3">ZWL {{number_format($total_earnings_zwl)}} </td>
 
                 
                 </tr>
