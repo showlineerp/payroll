@@ -366,6 +366,8 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
 @if(Session::has('success'))
 <script>
     html = '<div class="alert alert-success"> Deleted entry successfuly' + '</div>';
@@ -373,7 +375,6 @@
     $('#form_result').html(html).slideDown(300).delay(5000).slideUp(300);
 </script>
 @endif
-@push('scripts')
 <script type="text/javascript">
     $(document).ready(function() {
 
