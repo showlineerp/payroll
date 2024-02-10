@@ -6,10 +6,10 @@
             <ul id="side-main-menu" class="side-menu list-unstyled">
 
                 {{-- Addons --}}
-                <li class="{{ (request()->is('addons*')) ? 'active' : '' }}">
+                <!-- <li class="{{ (request()->is('addons*')) ? 'active' : '' }}">
                     <a href="{{route('addons')}}"> <i class="dripicons-ticket"></i><span>{{__('Addons')}}</span>
                     </a>
-                </li>
+                </li> -->
 
 
                 @if(auth()->user()->role_users_id ==1)

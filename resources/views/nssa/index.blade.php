@@ -7,7 +7,7 @@
     <div class="container"><span id="general_result"></span></div>
 
 
-    <div class="container mb-3">
+    <div class="container-fluid mb-3">
         <div id="form_results">
             @if(session('success'))
             <div class="alert alert-success">
@@ -31,7 +31,7 @@
 
             @csrf
             <div class="row">
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-6">
                     <label>{{__('Tax Currency')}} *</label>
                     <select name="currency_id" id="currency_id" required class="form-control">
                         @php
@@ -44,25 +44,26 @@
                         @endif
                     </select>
                 </div>
-                <div class="form-group col-md-4">
-                    <label>{{__('Insuarable deductions')}} * <small class="text-muted">%</small></label>
-                    <input type="number" step=".01" name="posb_insuarance" id="posb_insuarance" placeholder="Percentage" required class="form-control text-left">
-                </div>
-                <div class="form-group col-md-4">
-                    <label>{{__('Insuarable deductions Ceiling')}} *</label>
-                    <input type="number" step=".01" name="insuarance_ceiling" id="insuarance_ceiling" placeholder="Insuarable ceiling" required class="form-control text-left">
-                </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-6">
                     <label>{{__('APWCS Contribution')}} * <small class="text-muted">%</small></label>
                     <input type="number" step=".01" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
                 </div>
+                <div class="form-group col-md-6">
+                    <label>{{__('Insuarable deductions')}} * <small class="text-muted">%</small></label>
+                    <input type="number" step=".01" name="posb_insuarance" id="posb_insuarance" placeholder="Percentage" required class="form-control text-left">
+                </div>
+                <div class="form-group col-md-6">
+                    <label>{{__('Insuarable deductions Ceiling')}} *</label>
+                    <input type="number" step=".01" name="insuarance_ceiling" id="insuarance_ceiling" placeholder="Insuarable ceiling" required class="form-control text-left">
+                </div>
+               
             </div>
             <button class="btn btn-primary" type="submit">Submit</button>
 
 
         </form>
     </div>
-    <div class="">
+    <div class="container-fluid">
         <div class="table-responsive bg-white " id="nssa_taxtables">
             <table id="tax_tables" class="table  table-striped">
                 <thead>
