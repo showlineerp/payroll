@@ -111,7 +111,7 @@ class ZwlTaxTableController extends Controller
     {
         //
         $deleted = ZwlTaxTable::where('id',$id)->delete();
-        return redirect()->back()->with(['success' => __('New entry inserted succesfully')]);
+        return redirect()->back()->with(['success' => __('New entry deleted succesfully')]);
 
     }
 }
