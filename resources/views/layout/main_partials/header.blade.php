@@ -82,20 +82,20 @@
                                 </a>
                             </li>
                             @if(auth()->user()->role_users_id == 1)
-                                <li id="empty_database">
+                                <!-- <li id="empty_database">
                                     <a href="#">
                                         <i class="dripicons-stack"></i>
                                         {{__('Empty Database')}}
                                     </a>
-                                </li>
+                                </li> -->
                             @endif
                             @if(auth()->user()->role_users_id == 1)
-                                <li id="export_database">
+                                <!-- <li id="export_database">
                                     <a href="{{route('export_database')}}">
                                         <i class="dripicons-cloud-download"></i>
                                         {{__('Export Database')}}
                                     </a>
-                                </li>
+                                </li> -->
                             @endif
                             <li>
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
