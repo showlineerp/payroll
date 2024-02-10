@@ -74,6 +74,9 @@ class SalaryDeductionController extends Controller
 			$data['employee_id'] = $employee->id;
 			$data['deduction_amount'] = $request->deduction_amount;
 			$data ['deduction_type'] = $request->deduction_type;
+			$data['is_taxable'] = $request->is_taxable;
+			$data['currency_id'] = $request->currency_id;
+			$data['deductible_amt'] = $request->deductible_amt;
 
 
 			SalaryDeduction::create($data);
