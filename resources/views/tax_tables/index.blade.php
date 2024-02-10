@@ -18,21 +18,21 @@
                 <div class="row">
                     <div class="col-md-3 form-group">
                         <label class="text-bold">{{__('From')}} <span class="text-danger">*</span></label>
-                        <input type="number" name="lower_range" id="lower_range" placeholder="{{__('Lower Rangge')}}" required class="form-control  text-left">
+                        <input type="number" step="0.01" name="lower_range" id="lower_range" placeholder="{{__('Lower Rangge')}}" required class="form-control  text-left">
                     </div>
                     <div class="col-md-3 form-group">
                         <label class="text-bold">{{__('To')}} <span class="text-danger">*</span></label>
-                        <input type="text" name="upper_range" id="upper_bound" placeholder="{{__('Upper Range')}}" required class="form-control text-left">
+                        <input type="number" step="0.01" name="upper_range" id="upper_bound" placeholder="{{__('Upper Range')}}" required class="form-control text-left">
                         <small class="tex-muted text-right" style="color:grey">-1 is above</small>
                     </div>
                     <div class="col-md-3 form-group">
                         <label class="text-bold">{{__('Multiply by')}} <span class="text-danger">%</span></label>
-                        <input type="text" name="multiply_by" id="multiply_by" placeholder="{{__('Percentange to multiply')}}" required class="form-control text-left">
+                        <input type="number" step="0.01" name="multiply_by" id="multiply_by" placeholder="{{__('Percentange to multiply')}}" required class="form-control text-left">
                     </div>
 
                     <div class="col-md-3 form-group">
                         <label class="text-bold">Deduct <span class="text-danger">*</span></label>
-                        <input type="text" name="deduct" id="deduct" placeholder="Deduct" required class="form-control text-left">
+                        <input type="number" step="0.01" name="deduct" id="deduct" placeholder="Deduct" required class="form-control text-left">
                     </div>
                     <div class="col-md-6 form-group">
                         <label class="text-bold">Select Table <span class="text-danger">*</span></label>
