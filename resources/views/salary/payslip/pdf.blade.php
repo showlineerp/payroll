@@ -242,7 +242,9 @@
                             <td>{{$ln =  $currency_symbol == '$' ? 'ZWL '.$loan['monthly_payable']: '-'}}</td>
                         </tr>
                         @php
-                            $total_deductions = $total_deductions +( $currency_symbol == 'ZWL'? $loan['monthly_payable'] : 0);
+                            $total_deductions = $total_deductions +( $currency_symbol == '$'? $loan['monthly_payable'] : 0);
+                            $total_deductions_zwl = $total_deductions_wl +( $currency_symbol == 'ZWL'? $loan['monthly_payable'] : 0);
+
                         @endphp
                     @endforeach
                 @endif
@@ -251,8 +253,8 @@
                     @foreach($deductions as $deduction)
                         <tr>
                             <td class="py-3">{{$deduction['deduction_title']}}</td>
-                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == '$' ? '$ '.$deduction['deduction_amount'] : '-' }}</td>
-                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == 'ZWL' ? 'ZWL '.$deduction['deduction_amount'] : '-'}}</td>
+                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == '$' ? '$ '.number_format($deduction['deduction_amount']) : '-' }}</td>
+                            <td class="py-3">{{ $dctn_zwl = $deduction['currency_symbol'] == 'ZWL' ? 'ZWL '.number_format($deduction['deduction_amount']) : '-'}}</td>
                         </tr>
                         @php
                             $total_deductions = $total_deductions + ($deduction['currency_symbol'] == '$' ? $deduction['deduction_amount']: 0) ;
@@ -270,7 +272,7 @@
 
                     @php
                         $total_deductions = $total_deductions + ($currency_symbol == '$' || is_null($currency_symbol) ?  $pension_amount: 0);
-                        $total_deductions_zwl = $total_deductions_zwl + ($currency_symbol == 'ZWL' ?  $pension_amount: 0);
+                        $total_deductions_zwl += $total_deductions_zwl + ($currency_symbol == 'ZWL' ?  $pension_amount: 0);
 
                     @endphp
 
@@ -279,8 +281,8 @@
                 <tr>
                     <td class="py-3">{{trans('file.Total')}}</td>
                   
-                        <td id="total_deductions" class="py-3"> $ {{$total_deductions}} </td>
-                        <td id="total_deductions" class="py-3"> ZWL {{$total_deductions_zwl}} </td>
+                        <td id="total_deductions" class="py-3"> $ {{ number_format($total_deductions)}} </td>
+                        <td id="total_deductions" class="py-3"> ZWL {{number_format($total_deductions_zwl)}} </td>
           
                 </tr>
 
@@ -299,11 +301,11 @@
     
     <tr>
         <td>
-        <p class="text-danger">{{__('Total Paid USD')}} : $ <strong>{{$net_salary}}</strong></p>
+        <p class="text-danger">{{__('Total Paid USD')}} : $ <strong>{{number_format($net_salary)}}</strong></p>
        
         </td>
         <td>
-        <p class="text-danger px-3">{{__('Total Paid ZWL')}} : ZWL <strong>{{$net_salary}}</strong></p>
+        <p class="text-danger px-3">{{__('Total Paid ZWL')}} : ZWL <strong>{{number_format($net_salary_zwl)}}</strong></p>
         </td>
 
     </tr>
