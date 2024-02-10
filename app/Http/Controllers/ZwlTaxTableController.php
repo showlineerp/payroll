@@ -110,8 +110,16 @@ class ZwlTaxTableController extends Controller
     public function destroy(string $id)
     {
         //
-        $deleted = ZwlTaxTable::where('id',$id)->delete();
-        return redirect()->back()->with(['success' => __('New entry deleted succesfully')]);
+        try {
+            $deleted = ZwlTaxTable::where('id', $id)->delete();
+            if ($deleted) {
+                return redirect()->back()->with(['success' => __('Entry deleted successfully')]);
+            } else {
+                return redirect()->back()->with(['success' => __('Failed to delete entry')]);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['success' => $e->getMessage()]);
+        }
 
     }
 }
