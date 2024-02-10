@@ -47,13 +47,27 @@
                         @csrf
                         <div class="row">
 
-                            <div class="col-md-6 form-group">
+                            <div class="col-md-12 form-group">
                                 <label>{{__('Month Year')}} *</label>
                                 <input class="form-control month_year"  name="month_year" type="text" id="month_year">
                             </div>
-
                             <div class="col-md-6 form-group">
-                                <label>{{__('Deduction Option')}} *</label>
+                            <label>{{__('Dedudction Currency')}} *</label>
+
+                            <select name="currency_id" id="currency_id" required
+                                        class="form-control">
+                                      @php 
+                                      $currencies =  App\Models\Currency::get();
+                                      @endphp
+                                        @if ($currencies->isNotEmpty())
+                                        @foreach($currencies as $cur)
+                                        <option value="{{$cur->id}}">{{$cur->name }} {{ $cur->symbol }}</option>
+                                        @endforeach
+                                        @endif
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>{{__('Deduction Category')}} *</label>
                                 <select name="deduction_type" id="deduction_type" required
                                         class="form-control selectpicker"
                                         data-live-search="false" data-live-search-style="contains"
@@ -64,6 +78,21 @@
                                     <option value="Withholding Tax On Wages">{{__('Withholding Tax On Wages')}}</option>
                                     <option value="Other Statutory Deduction">{{__('Other Statutory Deduction')}}</option>
                                 </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>{{__('Deduction Type')}} *</label>
+                                <select name="is_taxable" id="allowance_is_taxable" required
+                                        class="form-control selectpicker"
+                                        title='{{__('Selecting',['key'=>__('Deduction Type')])}}...'>
+                                    <option value="1">{{trans('file.Taxable')}}</option>
+                                    <option value="0">{{trans('file.Non-Taxable')}}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                            <label>{{ __('Taxable percentage') }} </label>
+                                <input type="number" name="deductible_amt" id="deductible_amt"
+                                       placeholder={{__('Deductible percentage')}}
+                                                class="form-control text-left">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>{{__('Deduction Title')}} *</label>
@@ -80,7 +109,6 @@
                                               placeholder={{__('Deduction Amount')}}
                                                       required class="form-control">
                             </div>
-
 
                             <div class="container">
                                 <br>

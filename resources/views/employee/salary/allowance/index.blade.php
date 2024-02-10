@@ -77,7 +77,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
-                            <label>{{ __('Deductable percentage') }} </label>
+                            <label>{{ __('Taxable percentage') }} </label>
                                 <input type="number" name="deductible_amt" id="deductible_amt"
                                        placeholder={{__('Deductible percentage')}}
                                                 class="form-control text-left">
