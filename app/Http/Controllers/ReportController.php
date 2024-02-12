@@ -19,7 +19,7 @@ use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller {
 
@@ -840,5 +840,190 @@ class ReportController extends Controller {
         }
 
         return view('report.pension_report',compact('companies'));
+    }
+
+	public function nssa(Request $request)
+    {
+        $logged_user = auth()->user();
+        $companies = company::all();
+        $selected_date = empty($request->filter_month_year) ? now()->format('F-Y') : $request->filter_month_year ;
+		$currency = $request->currency_symbol;
+        if (request()->ajax())
+		{
+		
+            if (!empty($request->filter_employee))
+            {
+                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                        ->where('employee_id', $request->filter_employee)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip){
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            elseif (!empty($request->filter_company)) {
+                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                        ->where('company_id', $request->filter_company)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            else {
+                $payslips = Payslip::with( ['employee:id,first_name,last_name'])
+                        ->where('month_year',$selected_date)
+                        ->latest('created_at')
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] == request('currency_symbol') &&
+								 ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+
+            return datatables()->of($payslips)
+					->setRowId(function ($payslip)
+					{
+						return $payslip->id;
+					})
+                    ->addColumn('employee_name', function ($row)
+					{
+						return $row->employee->full_name;
+					})
+                    ->addColumn('posb_insuarance', function ($row) use ($currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && $deduction['currency_symbol'] == $currency)
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return $currency.' '.number_format($amount);
+					})
+                    ->addColumn('APWCS', function ($row) use( $currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if ($deduction['deduction_title'] == 'NSSA APWCS Contribution' && $deduction['currency_symbol'] == $currency  )
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return  $currency.' '. number_format($amount);
+					})
+					->make(true);
+
+        }
+
+        return view('report.nssa_report',compact('companies'));
+    }
+	public function zimra(Request $request)
+    {
+        $logged_user = auth()->user();
+        $companies = company::all();
+        $selected_date = empty($request->filter_month_year) ? now()->format('F-Y') : $request->filter_month_year ;
+		$currency = $request->currency_symbol;
+        if (request()->ajax())
+		{
+		
+            if (!empty($request->filter_employee))
+            {
+                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                        ->where('employee_id', $request->filter_employee)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip){
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            elseif (!empty($request->filter_company)) {
+                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                        ->where('company_id', $request->filter_company)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            else {
+                $payslips = Payslip::with( ['employee:id,first_name,last_name'])
+                        ->where('month_year',$selected_date)
+                        ->latest('created_at')
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] == request('currency_symbol') &&
+								 ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+
+            return datatables()->of($payslips)
+					->setRowId(function ($payslip)
+					{
+						return $payslip->id;
+					})
+                    ->addColumn('employee_name', function ($row)
+					{
+						return $row->employee->full_name;
+					})
+                    ->addColumn('tax_amount', function ($row) use ($currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if ($deduction['deduction_title'] == 'Zimra Income Tax' && $deduction['currency_symbol'] == $currency)
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return $currency.' '.number_format($amount);
+					})
+                    ->addColumn('aids_levy', function ($row) use( $currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if ($deduction['deduction_title'] == 'Zimra AIDS Levy' && $deduction['currency_symbol'] == $currency  )
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return  $currency.' '. number_format($amount);
+					})
+					->make(true);
+
+        }
+
+        return view('report.zimra_report',compact('companies'));
     }
 }

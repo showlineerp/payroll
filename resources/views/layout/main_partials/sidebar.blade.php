@@ -405,6 +405,18 @@
                             @can('report-pension')
                                 <li id="pension_report"><a href="{{route('report.pension')}}">{{__('Pension Report')}}</a></li>
                             @endcan
+                            @can('report-expense')
+                                <li id="expense_report"><a
+                                            href="{{route('report.zimra')}}">{{__('Zimra Report')}}</a>
+                                </li>
+                            @endcan
+                          
+                            @can('report-expense')
+                                <li id="expense_report"><a
+                                            href="{{route('report.nssa')}}">{{__('Nssa Report')}}</a>
+                                </li>
+                            @endcan
+                          
                         </ul>
                     </li>
                 {{-- @endcan --}}
