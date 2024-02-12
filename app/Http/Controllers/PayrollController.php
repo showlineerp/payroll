@@ -1315,7 +1315,15 @@ class PayrollController extends Controller
 		}
 
 		if ($taxTable) {
-			return $zimra_tax = ($tax_payable_amnt * $taxTable->multiply_by / 100) -  $taxTable->deduct;
+			$zimra_tax = ($tax_payable_amnt * ($taxTable->multiply_by / 100)) -  $taxTable->deduct;
+			if ($zwl)
+			{
+				Log::info("Zimra Tax ZWL: ". $zimra_tax);
+			}else{
+				Log::info("Zimra Tax USD: ". $zimra_tax);
+			}
+			
+			return $zimra_tax;
 		} else {
 			return 0;
 		}
@@ -1456,6 +1464,8 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		SalaryDeduction::create($data);
+
 		Log::info("I have created Zimra Aids deduction");
 
 		//ZWL

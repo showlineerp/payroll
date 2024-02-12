@@ -504,6 +504,8 @@ Route::group(['middleware' => ['XSS']], function () {
         Route::get('deposit', [ReportController::class, 'deposit'])->name('report.deposit');
         Route::get('transaction', [ReportController::class, 'transaction'])->name('report.transaction');
         Route::get('pension', [ReportController::class, 'pension'])->name('report.pension');
+        Route::get('nssa', [ReportController::class, 'nssa'])->name('report.nssa');
+        Route::get('zimra', [ReportController::class, 'zimra'])->name('report.zimra');
     });
 
     Route::prefix('organization')->group(function () {
