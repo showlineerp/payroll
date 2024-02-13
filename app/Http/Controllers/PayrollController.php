@@ -1345,7 +1345,8 @@ class PayrollController extends Controller
 
 		$allowance_total = 0;
 		$allowance_total_zwl = 0;
-
+		$taxable_allowances = 0;
+		$taxable_allowances_zwl = 0;
 		if (!$employee->allowances->isEmpty()) {
 			foreach ($employee->allowances as $item) {
 				if ($item->first_date <= $first_date) {

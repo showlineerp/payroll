@@ -277,7 +277,7 @@ class EmployeeController extends Controller
                     [
                         'first_name' => 'required',
                         'last_name' => 'required',
-                        'staff_id' => 'required|numeric|unique:employees',
+                        'staff_id' => 'required|unique:employees',
                         'email' => 'nullable|email|unique:users',
                         'contact_no' => 'required|numeric|unique:users',
                         'date_of_birth' => 'required',
@@ -482,7 +482,7 @@ class EmployeeController extends Controller
                         'first_name' => 'required',
                         'last_name' => 'required',
                         'username' => 'required|unique:users,username,'.$employee,
-                        'staff_id' => 'required|numeric|unique:employees,staff_id,'.$employee,
+                        'staff_id' => 'required|unique:employees,staff_id,'.$employee,
                         'email' => 'nullable|email|unique:users,email,'.$employee,
                         'contact_no' => 'required|numeric|unique:users,contact_no,'.$employee,
                         'date_of_birth' => 'required',
