@@ -97,8 +97,13 @@
                                 <thead>
                                 <tr>
                                     <th>{{__('Employee Name')}}</th>
-                                    <th>{{__('Month-Year')}}</th>
-                                    <th>{{__('payment Type')}}</th>
+                                    <th>{{__('SSN Number')}}</th>
+                                    <th>{{__('Nationa ID')}}</th>
+                                    <th>{{__('Birth Date')}}</th>
+                                    <th>{{__('Period')}}</th>
+                                    <th>{{__('Start Date')}}</th>
+                                    <th>{{__('End Date')}}</th>
+                                    <th>{{__('POSB Insuarable')}}</th>
                                     <th>{{__('POSB Insuarance')}}</th>
                                     <th>{{__('APWCS Contribution')}}</th>
                                 </tr>
@@ -160,12 +165,32 @@
                             name: 'employee_name'
                         },
                         {
+                            data: 'ssn_number',
+                            name: 'ssn_number'
+                        },
+                        {
+                            data: 'national_id',
+                            name: 'national_id'
+                        },
+                        {
+                            data: 'birth_date',
+                            name: 'birth_date'
+                        },
+                        {
                             data: 'month_year',
                             name: 'month_year'
                         },
                         {
-                            data: 'payment_type',
-                            name: 'payment_type'
+                            data: 'joining_date',
+                            name: 'joining_date'
+                        },
+                        {
+                            data: 'exit_date',
+                            name: 'exit_date'
+                        },
+                        {
+                            data: 'posb_insuarable',
+                            name: 'posb_insuarable'
                         },
                         {
                             data: 'posb_insuarance',

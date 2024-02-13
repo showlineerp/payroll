@@ -65,7 +65,7 @@
                             <div class="col-md-6 form-group">
                                 <label>{{__('Allowance Currency')}} *</label>
                                 <select name="currency_id" id="currency_id" required
-                                        class="form-control">
+                                        class="form-control selectpicker">
                                       @php 
                                       $currencies =  App\Models\Currency::get();
                                       @endphp

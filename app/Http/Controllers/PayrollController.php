@@ -590,8 +590,8 @@ class PayrollController extends Controller
 				Log::info('Allowances: USD' . $allowance_total);
 				Log::info('Allowances: ZWL' . $allowance_total_zwl);
 
-				$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $request->payslip_type);
-				$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $request->payslip_type, true);
+				$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $request->payslip_type, false, );
+				$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $request->payslip_type,true);
 				Log::info("I have created Zimra deduction");
 				$data = [];
 				$data['employee_id'] = $employee->id;
@@ -600,6 +600,7 @@ class PayrollController extends Controller
 				$data['deduction_title'] = 'Zimra Income Tax';
 				$data['currency_symbol'] = '$';
 				$data['deduction_amount'] = $zimra_deduction;
+				$data['zimra_payable_amount'] = ($basic_salary +  $taxable_allowances) - $other_deductions - $allowable_deductions;
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
@@ -613,6 +614,8 @@ class PayrollController extends Controller
 				$data['first_date'] = $first_date;
 				$data['deduction_title'] = 'Zimra Income Tax';
 				$data['deduction_amount'] = $zimra_deduction_zwl;
+				$data['zimra_payable_amount'] = ($basic_salary_zwl +  $taxable_allowances_zwl) - $other_deductions_zwl - $allowable_deductions_zwl;
+
 				$data['currency_symbol'] = 'ZWL';
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
@@ -628,6 +631,8 @@ class PayrollController extends Controller
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+
 				Log::info("I have created Zimra Aids deduction");
 
 				//ZWL
@@ -1307,11 +1312,14 @@ class PayrollController extends Controller
 		if ($zwl)
 		{
 			Log::info("Taxable amount ZWL: ".$tax_payable_amnt);
+			Log::info("ZWL Range");
+			Log::info($taxTable);
 
 		}else 
 		{
 			Log::info("Taxable amouunt  USD: " . $tax_payable_amnt);
-
+			Log::info("USD Range");
+			Log::info($taxTable);
 		}
 
 		if ($taxTable) {
@@ -1340,7 +1348,8 @@ class PayrollController extends Controller
 
 		$allowance_total = 0;
 		$allowance_total_zwl = 0;
-
+		$taxable_allowances = 0;
+		$taxable_allowances_zwl = 0;
 		if (!$employee->allowances->isEmpty()) {
 			foreach ($employee->allowances as $item) {
 				if ($item->first_date <= $first_date) {
@@ -1436,6 +1445,8 @@ class PayrollController extends Controller
 		$data['deduction_title'] = 'Zimra Income Tax';
 		$data['currency_symbol'] = '$';
 		$data['deduction_amount'] = $zimra_deduction;
+		$data['zimra_payable_amount'] = ($basic_salary +  $taxable_allowances) - $other_deductions - $allowable_deductions;
+
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
@@ -1450,11 +1461,14 @@ class PayrollController extends Controller
 		$data['deduction_title'] = 'Zimra Income Tax';
 		$data['deduction_amount'] = $zimra_deduction_zwl;
 		$data['currency_symbol'] = 'ZWL';
+		$data['zimra_payable_amount'] = ($basic_salary_zwl +  $taxable_allowances_zwl) - $other_deductions_zwl - $allowable_deductions_zwl;
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
 		Log::info("I have created Zimra zwl deduction");
+
+
 		$data = [];
 		$data['employee_id'] = $employee->id;
 		$data['month_year'] = $month_year;
@@ -1510,6 +1524,8 @@ class PayrollController extends Controller
 		$data['first_date'] = $first_date;
 		$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
 		$data['deduction_amount'] = $nssa_payable_contribution;
+		$data['insuarable_amount'] = $gross_salary;
+		$data['is_nssa_insuarance'] = true;
 		$data['currency_symbol'] = '$';
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
@@ -1523,17 +1539,22 @@ class PayrollController extends Controller
 		$data['first_date'] = $first_date;
 		$data['deduction_title'] = 'NSSA Insurance (' . $nssa->posb_insuarance . '%)';
 		$data['deduction_amount'] = $nssa_payable_contribution_zwl;
+		$data['insuarable_amount'] = $gross_salary_zwl;
+		$data['is_nssa_insuarance'] = true;
 		$data['currency_symbol'] = 'ZWL';
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
-		Log::info("Inserted Nass ZQL");
+
+
 		$data = [];
 		$data['employee_id'] = $employee->id;
 		$data['month_year'] = $month_year;
 		$data['first_date'] = $first_date;
 		$data['deduction_title'] = 'NSSA APWCS Contribution';
+		$data['is_nssa_contribution'] = true;
+		$data['insuarable_amount'] = $gross_salary;
 		$data['deduction_amount'] = $APWCS_contribution;
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
@@ -1548,6 +1569,8 @@ class PayrollController extends Controller
 		$data['deduction_title'] = 'NSSA APWCS Contribution';
 		$data['currency_symbol'] = 'ZWL';
 		$data['deduction_amount'] = $APWCS_contribution_zwl;
+		$data['is_nssa_contribution'] = true;
+		$data['insuarable_amount'] = $gross_salary_zwl;
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();

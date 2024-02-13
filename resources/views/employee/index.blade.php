@@ -138,8 +138,8 @@
                                        required class="form-control">
                             </div>
                             <div class="col-md-6 form-group">
-                                <label class="text-bold">{{__('Staff Id')}} <span class="text-danger">*</span></label>
-                                <input type="text" name="staff_id" id="staff_id" placeholder="{{__('Staff Id')}}"
+                                <label class="text-bold">{{__('National ID')}} <span class="text-danger">*</span></label>
+                                <input type="text" name="staff_id" id="staff_id" placeholder="{{__('National Id')}}"
                                        required class="form-control">
                             </div>
                             <div class="col-md-6 form-group">
@@ -288,6 +288,12 @@
                                 <label class="text-bold">{{__('Date Of Joining')}} <span class="text-danger">*</span></label>
                                 <input type="text" name="joining_date" id="joining_date" class="form-control date">
                             </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="text-bold">{{__('Nssa SSN No')}} <span class="text-danger">*</span></label>
+                                <input type="text" name="ssn_number" id="employee_grade" class="form-control ">
+                            </div>
+
 
                             <div class="col-md-6 form-group">
                                 <label for="profile_photo" class=""><strong>{{ __('Image') }}</strong></label>

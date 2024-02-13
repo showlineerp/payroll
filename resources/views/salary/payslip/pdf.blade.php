@@ -250,19 +250,50 @@
                 @endif
 
                 @if($deductions)
-                    @foreach($deductions as $deduction)
-                        <tr>
-                            <td class="py-3">{{$deduction['deduction_title']}}</td>
-                            <td class="py-3">{{ $dctn = $deduction['currency_symbol'] == '$' ? '$ '.number_format($deduction['deduction_amount']) : '-' }}</td>
-                            <td class="py-3">{{ $dctn_zwl = $deduction['currency_symbol'] == 'ZWL' ? 'ZWL '.number_format($deduction['deduction_amount']) : '-'}}</td>
-                        </tr>
-                        @php
-                            $total_deductions = $total_deductions + ($deduction['currency_symbol'] == '$' ? $deduction['deduction_amount']: 0) ;
-                            $total_deductions_zwl = $total_deductions_zwl + ($deduction['currency_symbol'] == 'ZWL' ? $deduction['deduction_amount']: 0) ;
+    @php
+        $combinedDeductions = [];
+        $total_deductions = 0;
+        $total_deductions_zwl = 0;
+    @endphp
 
-                        @endphp
-                    @endforeach
-                @endif
+    @foreach($deductions as $deduction)
+        @php
+            $title = $deduction['deduction_title'];
+            $amount = $deduction['deduction_amount'];
+            $symbol = $deduction['currency_symbol'];
+            
+            // Check if the deduction title exists in the combined array
+            $existingKey = array_search($title, array_column($combinedDeductions, 'deduction_title'));
+
+            if ($existingKey !== false) {
+                // If deduction title exists, update the amount_zwl
+                if ($symbol === 'ZWL') {
+                    $combinedDeductions[$existingKey]['amount_zwl'] = $amount;
+                    $total_deductions_zwl += $amount;
+                }
+            } else {
+                // If deduction title doesn't exist, add it to the combined array
+                $combinedDeductions[] = [
+                    'deduction_title' => $title,
+                    'amount' => $symbol === '$' ? $amount : '-',
+                    'amount_zwl' => $symbol === 'ZWL' ? $amount : '-'
+                ];
+
+                $total_deductions += ($symbol === '$') ? $amount : 0;
+                $total_deductions_zwl += ($symbol === 'ZWL') ? $amount : 0;
+            }
+        @endphp
+    @endforeach
+
+    {{-- Output the combined deductions --}}
+    @foreach($combinedDeductions as $deduction)
+        <tr>
+            <td class="py-3">{{ $deduction['deduction_title'] }}</td>
+            <td class="py-3">{{ $deduction['amount'] }}</td>
+            <td class="py-3">{{ $deduction['amount_zwl'] }}</td>
+        </tr>
+    @endforeach
+@endif
 
                     <tr>
                         <td class="py-3">{{__('Pension Amount')}}</td>
