@@ -97,8 +97,10 @@
                                 <thead>
                                 <tr>
                                     <th>{{__('Employee Name')}}</th>
+                                    <th>{{__('National Id')}}</th>
                                     <th>{{__('Month-Year')}}</th>
                                     <th>{{__('payment Type')}}</th>
+                                    <th>{{__('Taxable Salary')}}</th>
                                     <th>{{__('Tax Amount')}}</th>
                                     <th>{{__('AIDS Levy')}}</th>
                                 </tr>
@@ -160,12 +162,21 @@
                             name: 'employee_name'
                         },
                         {
+                            data: 'national_id',
+                            name: 'national_id'
+                        },
+                        
+                        {
                             data: 'month_year',
                             name: 'month_year'
                         },
                         {
                             data: 'payment_type',
                             name: 'payment_type'
+                        },
+                        {
+                            data: 'total_payable',
+                            name: 'total_payable'
                         },
                         {
                             data: 'tax_amount',

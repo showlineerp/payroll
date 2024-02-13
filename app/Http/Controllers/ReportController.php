@@ -784,21 +784,21 @@ class ReportController extends Controller {
 
             if (!empty($request->filter_employee))
             {
-                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                $payslips = Payslip::with(['employee:id,first_name,last_name, staff_id'])
                         ->where('employee_id', $request->filter_employee)
                         ->where('month_year', $selected_date)
                         ->where('pension_type','!=',NULL)
                         ->get();
             }
             elseif (!empty($request->filter_company)) {
-                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                $payslips = Payslip::with(['employee:id,first_name,last_name,staff_id'])
                         ->where('company_id', $request->filter_company)
                         ->where('month_year', $selected_date)
                         ->where('pension_type','!=',NULL)
                         ->get();
             }
             else {
-                $payslips = Payslip::with( ['employee:id,first_name,last_name'])
+                $payslips = Payslip::with( ['employee:id,first_name,last_name,staff_id'])
                         ->where('month_year',$selected_date)
                         ->where('pension_type','!=',NULL)
                         ->latest('created_at')
@@ -982,7 +982,7 @@ class ReportController extends Controller {
 		
             if (!empty($request->filter_employee))
             {
-                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                $payslips = Payslip::with(['employee:id,first_name,last_name,staff_id'])
                         ->where('employee_id', $request->filter_employee)
                         ->where('month_year', $selected_date)
                         ->get()->filter(function ($payslip){
@@ -995,7 +995,7 @@ class ReportController extends Controller {
 						});
             }
             elseif (!empty($request->filter_company)) {
-                $payslips = Payslip::with(['employee:id,first_name,last_name'])
+                $payslips = Payslip::with(['employee:id,first_name,last_name,staff_id'])
                         ->where('company_id', $request->filter_company)
                         ->where('month_year', $selected_date)
                         ->get()->filter(function ($payslip) {
@@ -1008,7 +1008,7 @@ class ReportController extends Controller {
 						});
             }
             else {
-                $payslips = Payslip::with( ['employee:id,first_name,last_name'])
+                $payslips = Payslip::with( ['employee:id,first_name,last_name,staff_id'])
                         ->where('month_year',$selected_date)
                         ->latest('created_at')
                         ->get()->filter(function ($payslip) {
@@ -1030,6 +1030,23 @@ class ReportController extends Controller {
                     ->addColumn('employee_name', function ($row)
 					{
 						return $row->employee->full_name;
+					})
+					->addColumn('national_id', function ($row)
+					{
+						return $row->employee->staff_id;
+					})
+					->addColumn('total_payable', function ($row) use($currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if ($deduction['deduction_title'] == 'Zimra Income Tax' && isset($deduction['zimra_payable_amount']) && $deduction['currency_symbol'] == $currency)
+							{
+								$amount = $deduction['zimra_payable_amount'];
+								break;
+							}
+						}
+                        return $currency.' '.number_format($amount);
 					})
                     ->addColumn('tax_amount', function ($row) use ($currency)
 					{
