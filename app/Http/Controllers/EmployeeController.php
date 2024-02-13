@@ -317,6 +317,7 @@ class EmployeeController extends Controller
                 $data['is_active'] = 1;
                 $data['salary_type'] = $request->salary_type;
                 $data['employee_grade'] = $request->employee_grade;
+                $data['ssn_number'] = $request->ssn_number;
 
                 $user = [];
                 $user['first_name'] = $request->first_name;
