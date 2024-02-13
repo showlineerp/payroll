@@ -628,6 +628,8 @@ class PayrollController extends Controller
 				$data['deduction_type'] = 'Other Statutory Deduction';
 				$data['created_at'] = Carbon::now();
 				$data['updated_at'] = Carbon::now();
+				SalaryDeduction::create($data);
+
 				Log::info("I have created Zimra Aids deduction");
 
 				//ZWL
@@ -1307,11 +1309,14 @@ class PayrollController extends Controller
 		if ($zwl)
 		{
 			Log::info("Taxable amount ZWL: ".$tax_payable_amnt);
+			Log::info("ZWL Range");
+			Log::info($taxTable);
 
 		}else 
 		{
 			Log::info("Taxable amouunt  USD: " . $tax_payable_amnt);
-
+			Log::info("USD Range");
+			Log::info($taxTable);
 		}
 
 		if ($taxTable) {
@@ -1455,6 +1460,8 @@ class PayrollController extends Controller
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
 		Log::info("I have created Zimra zwl deduction");
+
+
 		$data = [];
 		$data['employee_id'] = $employee->id;
 		$data['month_year'] = $month_year;
