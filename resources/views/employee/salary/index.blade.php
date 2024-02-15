@@ -27,6 +27,11 @@
                        aria-controls="Salary_deduction" aria-selected="false">{{__('Statutory Deductions')}}</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{route('salary_tax_credits.show',$employee)}}" id="salary_tax_credits-tab"
+                       data-toggle="tab" data-table="salary_tax_credits" data-target="#salary_tax_credits" role="tab"
+                       aria-controls="salary_tax_credits" aria-selected="false">Tax Credits</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{route('other_payment.show',$employee)}}" id="other_payment-tab"
                        data-toggle="tab" data-table="other_payment" data-target="#Other_payment" role="tab"
                        aria-controls="Other_payment" aria-selected="false">{{__('Other Payment')}}</a>
@@ -116,7 +121,11 @@
                 @include('employee.salary.commission.index')
 
             </div>
-
+            <div class="tab-pane fade" id="salary_tax_credits" role="tabpanel" aria-labelledby="salary_tax_credits-tab">
+                {{__('All Tax Credits')}}
+                <hr>
+                @include('employee.salary.tax_credits.index')
+            </div>
             <div class="tab-pane fade" id="Salary_loan" role="tabpanel" aria-labelledby="Salary_loan-tab">
                 {{__('All Loan')}}
                 <hr>

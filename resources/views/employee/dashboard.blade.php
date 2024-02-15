@@ -618,7 +618,9 @@
     $('#salary_allowance-tab').one('click', function (e) {
         @include('employee.salary.allowance.index_js')
     });
-
+    $('#salary_tax_credits-tab').one('click', function (e) {
+        @include('employee.salary.tax_credits.index_js')
+    });
     $('#salary_commission-tab').one('click', function (e) {
         @include('employee.salary.commission.index_js')
     });

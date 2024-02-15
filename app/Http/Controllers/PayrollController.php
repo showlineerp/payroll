@@ -1434,7 +1434,7 @@ class PayrollController extends Controller
 
 		Log::info('Allowances: USD' . $allowance_total);
 		Log::info('Allowances: ZWL' . $allowance_total_zwl);
-
+		$taxcredits = 0;
 		$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $payslip_type);
 		$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $payslip_type, true);
 		Log::info("I have created Zimra deduction");
