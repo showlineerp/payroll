@@ -215,9 +215,8 @@ class PayslipController extends Controller
 						return $data;
 					})
 					->addColumn('action', function ($data) {
-						$button  = '<a id="' . $data->payslip_key . '" class="show btn btn-primary btn-sm" href="' . route('payslip_details.show', $data->payslip_key) . '"><i class="dripicons-preview"></i></a>';
-						$button .= '&nbsp;&nbsp;';
-						$button .= '<a id="' . $data->payslip_key . '" class="download btn btn-info btn-sm" href="' . route('payslip.pdf', $data->payslip_key) . '"><i class="dripicons-download"></i></a>';
+					
+						$button = '<a id="' . $data->payslip_key . '" class="download btn btn-info btn-sm" href="' . route('payslip.pdf', $data->payslip_key) . '"><i class="dripicons-download"></i></a>';
 						return $button;
 					})
 					->rawColumns(['action', 'employee_name', 'salary_details'])

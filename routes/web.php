@@ -128,6 +128,7 @@ use App\Http\Controllers\WarningController;
 use App\Models\User;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\NssaTableController;
+use App\Http\Controllers\SalaryTaxCreditController;
 use App\Http\Controllers\UsdTaxTableController;
 use App\Http\Controllers\ZimdefTableController;
 use App\Http\Controllers\ZwlTaxTableController;
@@ -316,6 +317,14 @@ Route::group(['middleware' => ['XSS']], function () {
         Route::get('salary_basic/{id}/delete', [SalaryBasicController::class, 'destroy'])->name('salary_basic.destroy');
 
         Route::get('salary_allowance', [SalaryAllowanceController::class, 'index'])->name('salary_allowance.index');
+        Route::get('salary_tax_credits', [SalaryTaxCreditController::class, 'index'])->name('salary_tax_credits.index');
+        Route::get('salary_tax_credits/{employee}', [SalaryTaxCreditController::class, 'show'])->name('salary_tax_credits.show');
+        Route::post('salary_tax_credits/{employee}/store', [SalaryTaxCreditController::class, 'store'])->name('salary_tax_credits.store');
+        Route::get('salary_tax_credits/{id}/edit', [SalaryTaxCreditController::class, 'edit'])->name('salary_tax_credits.edit');
+ 
+        Route::post('salary_tax_credits/update', [SalaryTaxCreditController::class, 'update'])->name('salary_tax_credits.update');
+        Route::get('salary_tax_credits/{id}/delete', [SalaryTaxCreditController::class, 'destroy'])->name('salary_tax_credits.destroy');
+
         Route::get('salary_allowance/{id}/edit', [SalaryAllowanceController::class, 'edit'])->name('salary_allowance.edit');
         Route::get('salary_allowance/{employee}', [SalaryAllowanceController::class, 'show'])->name('salary_allowance.show');
         Route::post('salary_allowance/update', [SalaryAllowanceController::class, 'update'])->name('salary_allowance.update');
