@@ -1021,7 +1021,7 @@ class ReportController extends Controller {
 							return false;
 						});
             }
-
+Log::info(  $payslips);
             return datatables()->of($payslips)
 					->setRowId(function ($payslip)
 					{
@@ -1034,6 +1034,19 @@ class ReportController extends Controller {
 					->addColumn('national_id', function ($row)
 					{
 						return $row->employee->staff_id;
+					})
+					->addColumn('tax_credits', function ($row) use ($currency)
+					{
+						$amount = 0;
+						foreach($row->tax_credits as $deduction)
+						{
+							if ($deduction['currency_symbol'] == $currency)
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return $currency.' '.number_format($amount);
 					})
 					->addColumn('total_payable', function ($row) use($currency)
 					{
