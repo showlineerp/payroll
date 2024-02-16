@@ -870,6 +870,9 @@ class PayrollController extends Controller
 						},
 						'overtimes' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
+						},
+						'taxcredits' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
 						}
 					])
 						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id', 'currency_symbol')
@@ -902,6 +905,9 @@ class PayrollController extends Controller
 						},
 						'overtimes' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
+						},
+						'taxcredits' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
 						}
 					])
 						->select('id', 'first_name', 'last_name', 'basic_salary', 'payslip_type', 'pension_type', 'pension_amount', 'company_id', 'currency_symbol')
@@ -931,6 +937,9 @@ class PayrollController extends Controller
 							$query->where('first_date', $first_date);
 						},
 						'overtimes' => function ($query) use ($first_date) {
+							$query->where('first_date', $first_date);
+						},
+						'taxcredits' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
 						}
 					])
@@ -1068,7 +1077,9 @@ class PayrollController extends Controller
 						$type1          = "getArray";
 						$allowances    = $this->allowances($employee, $first_date, $type1); //getArray
 						$deductions    = $this->deductions($employee, $first_date, $type1);
-
+						Log::info($deductions);
+						$taxcredit = $this->taxcredits($employee, $first_date, "getArray");
+						Log::info($taxcredit);
 						$type2             = "getAmount";
 						$allowance_amount  = $this->allowances($employee, $first_date, $type2);
 						$allowance_amount_zwl  = $this->allowances($employee, $first_date, $type2, "ZWL");
@@ -1108,6 +1119,7 @@ class PayrollController extends Controller
 						$data['commissions']    = $employee->commissions;
 						$data['loans']          = $employee->loans;
 						$data['deductions']     = $deductions;
+						$data['tax_credits']    = $taxcredit;
 						$data['overtimes']      = $employee->overtimes;
 						$data['other_payments'] = $employee->otherPayments;
 						$data['month_year']     = $request->month_year;
@@ -1289,7 +1301,54 @@ class PayrollController extends Controller
 			return $deductions;
 		}
 	}
-	public function calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $tax_type, $zwl = false)
+	protected function taxcredits($employee, $first_date, $type, $currency = '$')
+	{
+		if ($type == "getAmount") {
+			$deduction_amount = 0;
+			if (!$employee->taxcredits->isEmpty()) {
+				foreach ($employee->taxcredits as $item) {
+					if ($item->first_date <= $first_date) {
+						$deduction_amount = 0;
+						foreach ($employee->taxcredits as $value) {
+							if ($value->first_date <= $first_date) {
+								if ($item->first_date == $value->first_date) {
+									if ($currency == 'ZWL') {
+										if ($value->currency_symbol == 'ZWL') {
+											$deduction_amount += $value->deduction_amount;
+										}
+									} else {
+										if ($value->currency_symbol == '$') {
+											$deduction_amount += $value->deduction_amount;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return $deduction_amount;
+		} elseif ($type == "getArray") {
+			if (!$employee->taxcredits->isEmpty()) {
+				foreach ($employee->taxcredits as $item) {
+					if ($item->first_date <= $first_date) {
+						$deductions = array();
+						foreach ($employee->taxcredits as $key => $value) {
+							if ($value->first_date <= $first_date) {
+								if ($item->first_date == $value->first_date) {
+									$deductions[] =  $employee->taxcredits[$key];
+								}
+							}
+						}
+					}
+				}
+			} else {
+				$deductions = [];
+			}
+			return $deductions;
+		}
+	}
+	public function calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $tax_type, $zwl = false, $taxcredits=0)
 	{
 		$tax_payable_amnt = ($basic_salary +  $taxable_allowances) - $other_deductions - $allowable_deductions;
 		if ($zwl) {
@@ -1331,7 +1390,7 @@ class PayrollController extends Controller
 				Log::info("Zimra Tax USD: ". $zimra_tax);
 			}
 			
-			return $zimra_tax;
+			return $zimra_tax - $taxcredits;
 		} else {
 			return 0;
 		}
@@ -1434,9 +1493,10 @@ class PayrollController extends Controller
 
 		Log::info('Allowances: USD' . $allowance_total);
 		Log::info('Allowances: ZWL' . $allowance_total_zwl);
-		$taxcredits = 0;
-		$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $payslip_type);
-		$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $payslip_type, true);
+		$taxcredits = $this->taxcredits($employee, $first_date, "getAmount");
+		$taxcredits_zwl = $this->taxcredits($employee, $first_date, "getAmount",'ZWL');
+		$zimra_deduction = $this->calculate_zimra($basic_salary, $taxable_allowances, $allowable_deductions, $other_deductions, $payslip_type, false, $taxcredits);
+		$zimra_deduction_zwl = $this->calculate_zimra($basic_salary_zwl, $taxable_allowances_zwl, $allowable_deductions_zwl, $other_deductions_zwl, $payslip_type, true, $taxcredits_zwl);
 		Log::info("I have created Zimra deduction");
 		$data = [];
 		$data['employee_id'] = $employee->id;

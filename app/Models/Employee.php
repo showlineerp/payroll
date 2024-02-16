@@ -62,6 +62,12 @@ class Employee extends Model
 	public function deductions(){
 		return $this->hasMany(SalaryDeduction::class);
 	}
+	public function taxcredits(){
+		return $this->hasMany(SalaryTaxCredit::class);
+	}
+	public function tax_credits(){
+		return $this->hasMany(SalaryTaxCredit::class);
+	}
 	public function commissions(){
 		return $this->hasMany(SalaryCommission::class);
 	}

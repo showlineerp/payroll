@@ -101,6 +101,7 @@
                                     <th>{{__('Month-Year')}}</th>
                                     <th>{{__('payment Type')}}</th>
                                     <th>{{__('Taxable Salary')}}</th>
+                                    <th>{{__('Tax Credits')}}</th>
                                     <th>{{__('Tax Amount')}}</th>
                                     <th>{{__('AIDS Levy')}}</th>
                                 </tr>
@@ -177,6 +178,10 @@
                         {
                             data: 'total_payable',
                             name: 'total_payable'
+                        },
+                        {
+                            data: 'tax_credits',
+                            name: 'tax_credits'
                         },
                         {
                             data: 'tax_amount',
