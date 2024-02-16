@@ -1038,6 +1038,8 @@ Log::info(  $payslips);
 					->addColumn('tax_credits', function ($row) use ($currency)
 					{
 						$amount = 0;
+						if (!is_null($row->tax_credits))
+						{
 						foreach($row->tax_credits as $deduction)
 						{
 							if ($deduction['currency_symbol'] == $currency)
@@ -1046,6 +1048,7 @@ Log::info(  $payslips);
 								break;
 							}
 						}
+					}
                         return $currency.' '.number_format($amount);
 					})
 					->addColumn('total_payable', function ($row) use($currency)
@@ -1077,6 +1080,7 @@ Log::info(  $payslips);
                     ->addColumn('aids_levy', function ($row) use( $currency)
 					{
 						$amount = 0;
+					
 						foreach($row->deductions as $deduction)
 						{
 							if ($deduction['deduction_title'] == 'Zimra AIDS Levy' && $deduction['currency_symbol'] == $currency  )
