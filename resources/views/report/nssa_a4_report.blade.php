@@ -99,7 +99,7 @@
                                     <th>{{__('SSRNumber')}}</th>
                                     <th>{{__('WorksNumber')}}</th>
                                     <th>{{__('SSNNumber')}}</th>
-                                    <th>{{__('NationalID')}}</th>
+                                    <th>{{__('NationalIDNumber')}}</th>
                                     <th>{{__('Period')}}</th>
                                     <th>{{__('BirthDate')}}</th>
                                     <th>{{__('Surname')}}</th>
@@ -144,8 +144,9 @@
 
             function fill_datatable(filter_company = '', filter_employee = '', filter_month_year = '', currency_symbol='$') {
                 $('#details_month_year').html($('#month_year').val());
+                filter_month_year = filter_month_year == ''? $('#month_year').val(): filter_month_year;
                 let table_table = $('#pension_report-table').DataTable({
-                    responsive: true,
+                    responsive: false,
                     fixedHeader: {
                         header: true,
                         footer: true
@@ -153,7 +154,7 @@
                     processing: true,
                     serverSide: true,
                     ajax: {
-                        url: "{{ route('report.nssa') }}",
+                        url: "{{ route('report.nssa-p4') }}",
                         data: {
                             filter_company: filter_company,
                             filter_employee: filter_employee,
@@ -217,8 +218,8 @@
                             name: 'APWCS'
                         },
                         {
-                            data: 'posb_insuarable',
-                            name: 'posb_insuarable'
+                            data: 'posb_insuarable2',
+                            name: 'posb_insuarable2'
                         },
 
                     ],

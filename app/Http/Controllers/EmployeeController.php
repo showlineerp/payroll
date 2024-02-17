@@ -20,6 +20,7 @@ use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
@@ -353,12 +354,14 @@ class EmployeeController extends Controller
 
                     DB::commit();
                 } catch (Exception $e) {
+                    Log::error( $e->getMessage(), $e->getTrace());
+
                     DB::rollback();
 
                     return response()->json(['error' => $e->getMessage()]);
                 } catch (Throwable $e) {
                     DB::rollback();
-
+                    Log::error( $e->getMessage(), $e->getTrace());
                     return response()->json(['error' => $e->getMessage()]);
                 }
 

@@ -1027,9 +1027,13 @@ class ReportController extends Controller {
 					{
 						return $payslip->id;
 					})
-                    ->addColumn('employee_name', function ($row)
+					->addColumn('ssr_number', function ($row)
 					{
-						return $row->employee->full_name;
+						return "5276829Y";
+					})
+                    ->addColumn('works_number', function ($row)
+					{
+						return  "";
 					})
 					->addColumn('ssn_number', function ($row)
 					{
@@ -1039,6 +1043,59 @@ class ReportController extends Controller {
 					{
 						return $row->employee->staff_id;
 					})
+					->addColumn('period', function ($row)
+					{
+						return date('ym', strtotime(request()->filter_month_year));
+					})
+					->addColumn('birth_date', function ($row)
+					{
+						if (!empty($row->employee->date_of_birth)) {
+						return date("d/m/Y", strtotime($row->employee->date_of_birth));
+						}else
+						{
+							return "01/01/1970";
+						}
+					})
+					->addColumn('surname', function ($row)
+					{
+						return $row->employee->last_name;
+					})
+					->addColumn('first_name', function ($row)
+					{
+						return $row->employee->first_name;
+					})
+					->addColumn('joining_date', function ($row)
+					{
+						if (!empty($row->employee->joining_date))
+						{
+							return date("d/m/Y", strtotime($row->employee->joining_date));
+						}else 
+						{
+							return "01/01/1970";
+						}
+						
+					})
+					->addColumn('exit_date', function ($row)
+					{
+						if (!empty($row->employee->exit_date))
+						{
+							return date("d/m/Y", strtotime($row->employee->exit_date));
+						}else 
+						{
+							$filter_month_year = request()->filter_month_year;
+
+							// Parse the filter_month_year string into a Carbon instance
+							$date = Carbon::createFromFormat('F-Y', $filter_month_year);
+
+							// Set the date to the last day of the year
+							$date->endOfYear();
+
+							// Get the formatted end date in the desired format
+                  			$end_of_year = $date->format('d/m/Y');
+							return $date->format('d/m/Y');
+						}
+					})
+					
 					->addColumn('posb_insuarable', function ($row)
 					{
 						$amount = 0;
@@ -1050,24 +1107,9 @@ class ReportController extends Controller {
 								break;
 							}
 						}
-                        return number_format($amount);
+                        return $amount;
 					})
-					->addColumn('birth_date', function ($row)
-					{
-						return $row->employee->date_of_birth;
-					})
-					->addColumn('joining_date', function ($row)
-					{
-						return $row->employee->joining_date;
-					})
-					->addColumn('exit_date', function ($row)
-					{
-						return $row->employee->exit_date;
-					})
-					->addColumn('start_date', function ($row)
-					{
-						return date('ym', strtotime(request()->filter_month_year));
-					})
+					
                     ->addColumn('posb_insuarance', function ($row) use ($currency)
 					{
 						$amount = 0;
@@ -1079,7 +1121,7 @@ class ReportController extends Controller {
 								break;
 							}
 						}
-                        return $currency.' '.number_format($amount);
+                        return  $amount;
 					})
                     ->addColumn('APWCS', function ($row) use( $currency)
 					{
@@ -1092,13 +1134,26 @@ class ReportController extends Controller {
 								break;
 							}
 						}
-                        return  $currency.' '. number_format($amount);
+                        return  $amount;
+					})
+					->addColumn('posb_insuarable2', function ($row)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && isset($deduction['insuarable_amount']) &&  $deduction['currency_symbol'] == request('currency_symbol'))
+							{
+								$amount = $deduction['insuarable_amount'];
+								break;
+							}
+						}
+                        return $amount;
 					})
 					->make(true);
 
         }
 
-        return view('report.nssa_report',compact('companies'));
+        return view('report.nssa_a4_report',compact('companies'));
     }
 
 	public function zimra(Request $request)
