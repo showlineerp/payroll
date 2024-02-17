@@ -270,7 +270,7 @@ class PayslipController extends Controller
 		$month_year = $payslip->month_year;
 		$first_date = date('Y-m-d', strtotime('first day of ' . $month_year));
 		$last_date  = date('Y-m-d', strtotime('last day of ' . $month_year));
-
+	
 		$employee = Employee::with([
 			'user:id,username', 'company.Location.country',
 			'department:id,department_name', 'designation:id,designation_name',
@@ -280,8 +280,20 @@ class PayslipController extends Controller
 		])
 			->select('id', 'first_name', 'last_name', 'joining_date', 'contact_no', 'company_id', 'department_id', 'designation_id', 'payslip_type', 'pension_amount', 'currency_symbol', 'currency_id')
 			->where('id', $payslip->employee_id)->first()->toArray();
-
-
+			$show_leave = env('SHOW_LEAVE_PAYSLIP', false);
+			if ($show_leave) {
+			$employeeLeaveTypeDetail = EmployeeLeaveTypeDetail::where('employee_id',$payslip->employee_id)->first();
+			$leaveTypeUnserialize = [];
+	
+			if ($employeeLeaveTypeDetail) {
+				$leaveTypeUnserialize = unserialize($employeeLeaveTypeDetail->leave_type_detail);
+			
+			}
+			$employee['leaves'] = $leaveTypeUnserialize;
+		}else 
+		{
+			$employee['leaves'] = [];
+		}
 		// return $payslip->pension_amount;
 
 		$total_minutes = 0;
