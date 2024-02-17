@@ -88,6 +88,8 @@ class GeneralSettingController extends Controller
             $this->dataWriteInENVFile('RTL_LAYOUT',$request->input('rtl_layout', NULL));
             $this->dataWriteInENVFile('ENABLE_CLOCKIN_CLOCKOUT',$request->input('enable_clockin_clockout', NULL));
             $this->dataWriteInENVFile('ENABLE_EARLY_CLOCKIN',$request->input('enable_early_clockin', NULL));
+			$this->dataWriteInENVFile('SHOW_LEAVE_PAYSLIP',$request->input('show_leave_payslip', NULL));
+
             $this->dataWriteInENVFile('ATTENDANCE_DEVICE_DATE_FORMAT',$request->Attendance_Device_date_format ? $request->Attendance_Device_date_format : 'm/d/Y');
 
 			$path = base_path('config/variable.php');
@@ -111,6 +113,7 @@ class GeneralSettingController extends Controller
 			$general_setting->default_payment_bank = $data['account_id'];
 			$general_setting->footer = $request->footer;
 			$general_setting->footer_link = $request->footer_link;
+			$general_setting->show_leave_payslip = $request->show_leave_payslip;
 
 			$logo = $request->site_logo;
 

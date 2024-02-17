@@ -140,6 +140,12 @@
                                             <label class="mr-4 form-check-label"><strong>{{trans('file.Enable Early Clock In (Added to Worktime)')}} </strong></label>
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="mt-4 form-check">
+                                            <input type="checkbox" name="show_leave_payslip" class="form-check-input" value="1" {{env('SHOW_LEAVE_PAYSLIP')!=NULL ? 'checked':''}}/>
+                                            <label class="mr-4 form-check-label"><strong>Show leave days on Payslip</strong></label>
+                                        </div>
+                                    </div>
                                     {{-- <div class="col-md-6">
                                         <div class="form-group mt-4">
                                             <label><strong>{{__('file.Attendance Device Date Format')}}</strong></label>
