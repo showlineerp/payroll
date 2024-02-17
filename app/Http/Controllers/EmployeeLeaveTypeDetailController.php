@@ -21,8 +21,6 @@ class EmployeeLeaveTypeDetailController extends Controller
                 $leaveTypeUnserialize = unserialize($employeeLeaveTypeDetail->leave_type_detail);
             }
 
-
-
             return datatables()->of($leaveTypeUnserialize)
                 ->setRowId(function ($row)
                 {

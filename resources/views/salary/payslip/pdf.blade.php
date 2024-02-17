@@ -288,7 +288,7 @@
     {{-- Output the combined deductions --}}
     @foreach($combinedDeductions as $deduction)
         <tr>
-            <td class="py-3">{{ $deduction['deduction_title'] }}</td>
+            <td class="py-3">{{ str_replace("Zimra Income Tax", "ZIMRA Payee Tax", $deduction['deduction_title']) }}</td>
             <td class="py-3">{{ $deduction['amount'] }}</td>
             <td class="py-3">{{ $deduction['amount_zwl'] }}</td>
         </tr>

@@ -155,6 +155,10 @@ class LeaveController extends Controller
 
                 //Mail
                 $department = department::with('DepartmentHead:id,email')->where('id', $request->department_id)->first();
+                if(!is_null($department->DepartmentHead))
+                {
+
+                
                 Notification::route('mail', $department->DepartmentHead->email)
                     ->notify(new EmployeeLeaveNotification(
                         $leave->employee->full_name,
@@ -164,6 +168,7 @@ class LeaveController extends Controller
                         $leave->leave_reason,
                     ));
             }
+        }
             return response()->json(['success' => __('Data Added successfully.')]);
         }
         return response()->json(['success' => __('You are not authorized')]);
