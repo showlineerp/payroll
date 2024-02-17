@@ -123,6 +123,12 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label><strong>{{__('NSSA SSR Number')}} *</strong></label>
+                                            <input type="text" name="ssr_number" class="form-control" value="{{$general_settings_data->ssr_number ?? ''}}" required />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
                                         <div class="mt-4 form-check">
                                             <input type="checkbox" name="rtl_layout" class="form-check-input" value="1" {{env('RTL_LAYOUT')!=NULL ? 'checked':''}} />
                                             <label class="mr-4 form-check-label"><strong>{{trans('file.RTL Layout')}} </strong></label>
@@ -146,6 +152,7 @@
                                             <label class="mr-4 form-check-label"><strong>Show leave days on Payslip</strong></label>
                                         </div>
                                     </div>
+                                    
                                     {{-- <div class="col-md-6">
                                         <div class="form-group mt-4">
                                             <label><strong>{{__('file.Attendance Device Date Format')}}</strong></label>
