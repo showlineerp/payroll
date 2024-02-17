@@ -27,7 +27,7 @@ class LeaveTypeController {
 				})
 				->addColumn('action', function ($data)
 				{
-                    return 4;
+                  
 					if (auth()->user()->can('access-variable_type'))
 					{
                         $button = "";
