@@ -9,6 +9,7 @@ use App\Models\FinanceBankCash;
 use App\Models\FinanceDeposit;
 use App\Models\FinanceExpense;
 use App\Models\FinanceTransaction;
+use App\Models\GeneralSetting;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Payslip;
@@ -977,6 +978,8 @@ class ReportController extends Controller {
         $companies = company::all();
         $selected_date = empty($request->filter_month_year) ? now()->format('F-Y') : $request->filter_month_year ;
 		$currency = $request->currency_symbol;
+		$general_settings_data = GeneralSetting::latest()->first();
+
         if (request()->ajax())
 		{
 		
@@ -1027,9 +1030,9 @@ class ReportController extends Controller {
 					{
 						return $payslip->id;
 					})
-					->addColumn('ssr_number', function ($row)
+					->addColumn('ssr_number', function ($row) use( $general_settings_data)
 					{
-						return "5276829Y";
+						return $general_settings_data->ssr_number;
 					})
                     ->addColumn('works_number', function ($row)
 					{

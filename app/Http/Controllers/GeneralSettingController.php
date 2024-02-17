@@ -89,6 +89,7 @@ class GeneralSettingController extends Controller
             $this->dataWriteInENVFile('ENABLE_CLOCKIN_CLOCKOUT',$request->input('enable_clockin_clockout', NULL));
             $this->dataWriteInENVFile('ENABLE_EARLY_CLOCKIN',$request->input('enable_early_clockin', NULL));
 			$this->dataWriteInENVFile('SHOW_LEAVE_PAYSLIP',$request->input('show_leave_payslip', NULL));
+			$this->dataWriteInENVFile('SSR_NUMBER',$request->input('ssr_number', NULL));
 
             $this->dataWriteInENVFile('ATTENDANCE_DEVICE_DATE_FORMAT',$request->Attendance_Device_date_format ? $request->Attendance_Device_date_format : 'm/d/Y');
 
@@ -114,7 +115,7 @@ class GeneralSettingController extends Controller
 			$general_setting->footer = $request->footer;
 			$general_setting->footer_link = $request->footer_link;
 			$general_setting->show_leave_payslip = $request->show_leave_payslip;
-
+			$general_setting->ssr_number = $request->ssr_number;
 			$logo = $request->site_logo;
 
 
