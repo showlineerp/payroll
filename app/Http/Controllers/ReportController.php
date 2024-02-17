@@ -971,6 +971,191 @@ class ReportController extends Controller {
 
         return view('report.nssa_report',compact('companies'));
     }
+	public function nssa_p4(Request $request)
+    {
+        $logged_user = auth()->user();
+        $companies = company::all();
+        $selected_date = empty($request->filter_month_year) ? now()->format('F-Y') : $request->filter_month_year ;
+		$currency = $request->currency_symbol;
+        if (request()->ajax())
+		{
+		
+            if (!empty($request->filter_employee))
+            {
+                $payslips = Payslip::with(['employee:id,first_name,exit_date,last_name,staff_id,ssn_number,date_of_birth,joining_date'])
+                        ->where('employee_id', $request->filter_employee)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip){
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            elseif (!empty($request->filter_company)) {
+                $payslips = Payslip::with(['employee:id,first_name,exit_date,last_name,staff_id,ssn_number,date_of_birth,joining_date'])
+                        ->where('company_id', $request->filter_company)
+                        ->where('month_year', $selected_date)
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] === request('currency_symbol') && ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+            else {
+                $payslips = Payslip::with( ['employee:id,first_name,exit_date,last_name,staff_id,ssn_number,date_of_birth,joining_date'])
+                        ->where('month_year',$selected_date)
+                        ->latest('created_at')
+                        ->get()->filter(function ($payslip) {
+							foreach ($payslip->deductions as $allowance) {
+								if (isset($allowance['currency_symbol']) && $allowance['currency_symbol'] == request('currency_symbol') &&
+								 ($allowance['deduction_title'] == 'Zimra Income Tax' || $allowance['deduction_title'] == 'Zimra AIDS Levy') ) {
+									return true;
+								}
+							}
+							return false;
+						});
+            }
+
+            return datatables()->of($payslips)
+					->setRowId(function ($payslip)
+					{
+						return $payslip->id;
+					})
+					->addColumn('ssr_number', function ($row)
+					{
+						return "5276829Y";
+					})
+                    ->addColumn('works_number', function ($row)
+					{
+						return  "";
+					})
+					->addColumn('ssn_number', function ($row)
+					{
+						return $row->employee->ssn_number;
+					})
+					->addColumn('national_id', function ($row)
+					{
+						return $row->employee->staff_id;
+					})
+					->addColumn('period', function ($row)
+					{
+						return date('ym', strtotime(request()->filter_month_year));
+					})
+					->addColumn('birth_date', function ($row)
+					{
+						if (!empty($row->employee->date_of_birth)) {
+						return date("d/m/Y", strtotime($row->employee->date_of_birth));
+						}else
+						{
+							return "01/01/1970";
+						}
+					})
+					->addColumn('surname', function ($row)
+					{
+						return $row->employee->last_name;
+					})
+					->addColumn('first_name', function ($row)
+					{
+						return $row->employee->first_name;
+					})
+					->addColumn('joining_date', function ($row)
+					{
+						if (!empty($row->employee->joining_date))
+						{
+							return date("d/m/Y", strtotime($row->employee->joining_date));
+						}else 
+						{
+							return "01/01/1970";
+						}
+						
+					})
+					->addColumn('exit_date', function ($row)
+					{
+						if (!empty($row->employee->exit_date))
+						{
+							return date("d/m/Y", strtotime($row->employee->exit_date));
+						}else 
+						{
+							$filter_month_year = request()->filter_month_year;
+
+							// Parse the filter_month_year string into a Carbon instance
+							$date = Carbon::createFromFormat('F-Y', $filter_month_year);
+
+							// Set the date to the last day of the year
+							$date->endOfYear();
+
+							// Get the formatted end date in the desired format
+                  			$end_of_year = $date->format('d/m/Y');
+							return $date->format('d/m/Y');
+						}
+					})
+					
+					->addColumn('posb_insuarable', function ($row)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && isset($deduction['insuarable_amount']) &&  $deduction['currency_symbol'] == request('currency_symbol'))
+							{
+								$amount = $deduction['insuarable_amount'];
+								break;
+							}
+						}
+                        return $amount;
+					})
+					
+                    ->addColumn('posb_insuarance', function ($row) use ($currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && $deduction['currency_symbol'] == $currency)
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return  $amount;
+					})
+                    ->addColumn('APWCS', function ($row) use( $currency)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if ($deduction['deduction_title'] == 'NSSA APWCS Contribution' && $deduction['currency_symbol'] == $currency  )
+							{
+								$amount = $deduction['deduction_amount'];
+								break;
+							}
+						}
+                        return  $amount;
+					})
+					->addColumn('posb_insuarable2', function ($row)
+					{
+						$amount = 0;
+						foreach($row->deductions as $deduction)
+						{
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && isset($deduction['insuarable_amount']) &&  $deduction['currency_symbol'] == request('currency_symbol'))
+							{
+								$amount = $deduction['insuarable_amount'];
+								break;
+							}
+						}
+                        return $amount;
+					})
+					->make(true);
+
+        }
+
+        return view('report.nssa_a4_report',compact('companies'));
+    }
+
 	public function zimra(Request $request)
     {
         $logged_user = auth()->user();

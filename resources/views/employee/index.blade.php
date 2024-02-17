@@ -291,7 +291,7 @@
 
                             <div class="col-md-6 form-group">
                                 <label class="text-bold">{{__('Nssa SSN No')}} <span class="text-danger">*</span></label>
-                                <input type="text" name="ssn_number" id="employee_grade" class="form-control ">
+                                <input type="text" name="ssn_number" id="ssn_number" class="form-control ">
                             </div>
 
 

@@ -974,9 +974,12 @@ class PayrollController extends Controller
 					DB::commit();
 				} catch (Exception $e) {
 					DB::rollback();
+					Log::error($e->getMessage(), $e->getTrace());
 					return response()->json(['error' =>  $e->getMessage()]);
 				} catch (Throwable $e) {
 					DB::rollback();
+					Log::error($e->getMessage(), $e->getTrace());
+
 					return response()->json(['error' => $e->getMessage()]);
 				}
 
@@ -989,6 +992,7 @@ class PayrollController extends Controller
 
 	protected function allowances($employee, $first_date, $type, $currency = '$')
 	{
+		$allowances = [];
 		if ($type == "getArray") {
 			if (!$employee->allowances->isEmpty()) {
 				foreach ($employee->allowances as $item) {

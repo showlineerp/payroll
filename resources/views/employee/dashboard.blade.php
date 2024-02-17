@@ -390,7 +390,10 @@
                                                                 <option value="ip_based" @if($employee->attendance_type=='ip_based') selected  @endif>{{__('IP Based')}}</option>
                                                         </select>
                                                     </div>
-
+                                                    <div class="col-md-4 form-group">
+                                <label class="text-bold">{{__('Nssa SSN No')}} <span class="text-danger">*</span></label>
+                                <input type="text" value="{{$employee->ssn_number}}" name="ssn_number" id="employee_grade" class="form-control ">
+                            </div>
                                                     {{-- <div class="col-md-4 form-group">
                                                         <label>{{__('Total Annual Leave')}}  (Year - {{date('Y')}})</label>
                                                         <input type="number" min="0" name="total_leave" id="total_leave" autocomplete="off" class="form-control" value="{{$employee->total_leave}}">
