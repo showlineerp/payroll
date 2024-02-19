@@ -1117,18 +1117,23 @@ class ReportController extends Controller {
                     ->addColumn('posb_insuarance', function ($row) use ($currency)
 					{
 						$amount = 0;
+						$insuarable = 0;
 						foreach($row->deductions as $deduction)
 						{
 							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && $deduction['currency_symbol'] == $currency)
 							{
 								$amount = $deduction['deduction_amount'];
+								$insuarable = $deduction['insuarable_amount'];
 								break;
 							}
+							
 						}
+						
+					
 						$apwcws = EmployerNssaTaxTable::where('currency_symbol', $currency)->latest()->first();
 						if ($apwcws)
 						{
-							$apwcs = $amount * ($apwcws->posb_insuarance/100);
+							$apwcs = $insuarable * ($apwcws->posb_insuarance/100);
 						}else 
 						{
 							$apwcs  = 0;
