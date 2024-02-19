@@ -203,11 +203,12 @@ class GeneralSettingController extends Controller
 
 		foreach ($tables as $table) {
 			// if($table->$str != 'countries' && $table->$str != 'model_has_roles' && $table->$str != 'role_users' && $table->$str != 'general_settings'  && $table->$str != 'migrations' && $table->$str != 'password_resets' && $table->$str != 'permissions' &&  $table->$str != 'roles' && $table->$str != 'role_has_permissions' && $table->$str != 'users') {
-			if($table->$str != 'countries' && $table->$str != 'model_has_roles' && $table->$str != 'general_settings'  && $table->$str != 'migrations' && $table->$str != 'password_resets' && $table->$str != 'permissions' &&  $table->$str != 'roles' && $table->$str != 'role_has_permissions' && $table->$str != 'users') {
+			if($table->$str != 'countries' && $table->$str != 'model_has_roles' && $table->$str != 'general_settings'  && $table->$str != 'migrations' && $table->$str != 'password_resets' && $table->$str != 'permissions' &&  $table->$str != 'roles' && $table->$str != 'role_has_permissions' && $table->$str != 'users' && $table->$str != 'currencies'  && $table->$str != 'zwl_tax_tables'&& $table->$str != 'usd_tax_tables') {
 				DB::table($table->$str)->truncate();
 			}
 		}
         LeaveType::create(['leave_type'=>'Others','allocated_day'=>0]);
+        LeaveType::create(['leave_type'=>'Annual','allocated_day'=>0]);
 
 		DB::statement("SET foreign_key_checks=1");
 
