@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\company;
 use App\Models\Employee;
+use App\Models\EmployerNssaTaxTable;
 use App\Models\ExpenseType;
 use App\Models\FinanceBankCash;
 use App\Models\FinanceDeposit;
@@ -1131,13 +1132,21 @@ class ReportController extends Controller {
 						$amount = 0;
 						foreach($row->deductions as $deduction)
 						{
-							if ($deduction['deduction_title'] == 'NSSA APWCS Contribution' && $deduction['currency_symbol'] == $currency  )
+							if (strpos($deduction['deduction_title'],'NSSA Insurance')!== false && $deduction['currency_symbol'] == $currency)
 							{
-								$amount = $deduction['deduction_amount'];
+								$amount = $deduction['insuarable_amount'];
 								break;
 							}
 						}
-                        return  $amount;
+						$apwcws = EmployerNssaTaxTable::where('currency_symbol', $currency)->latest()->first();
+						if ($apwcws)
+						{
+							$apwcs = $amount * ($apwcws->posb_contribution/100);
+						}else 
+						{
+							$apwcs  = 0;
+						}
+                        return  $apwcs;
 					})
 					->addColumn('posb_insuarable2', function ($row)
 					{

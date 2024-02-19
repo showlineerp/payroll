@@ -328,7 +328,10 @@ $a++;
             $title = $deduction['deduction_title'];
             $amount = $deduction['deduction_amount'];
             $symbol = $deduction['currency_symbol'];
-            
+            if ($title =='NSSA APWCS Contribution')
+                {
+                continue;
+                }
             // Check if the deduction title exists in the combined array
             $existingKey = array_search($title, array_column($combinedDeductions, 'deduction_title'));
 
@@ -340,6 +343,7 @@ $a++;
                 }
             } else {
                 // If deduction title doesn't exist, add it to the combined array
+               
                 $combinedDeductions[] = [
                     'deduction_title' => $title,
                     'amount' => $symbol === '$' ? $amount : '-',
