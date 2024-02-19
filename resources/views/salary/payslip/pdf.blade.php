@@ -198,12 +198,12 @@
                     @endforeach
                 @endif
 
-
-                @if($deductions)
                 @php
         $combinedDeductions = [];
      
     @endphp
+                @if($deductions)
+             
 
     @foreach($deductions as $deduction)
         @php
