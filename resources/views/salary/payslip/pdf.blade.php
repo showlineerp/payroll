@@ -235,8 +235,15 @@
     @endif
                 @php 
 
-                $total_rows_alloances = count($overtimes) + count($allowances) + count($other_payments) + 1;
-                $total_rows_deductions = count( $combinedDeductions) + count($loans) + 1;
+             
+
+                $total_rows_alloances = (is_array($overtimes) ? count($overtimes) : 0) + 
+                        (is_array($allowances) ? count($allowances) : 0) + 
+                        (is_array($other_payments) ? count($other_payments) : 0) + 1;
+
+$total_rows_deductions = (is_array($combinedDeductions) ? count($combinedDeductions) : 0) + 
+                         (is_array($loans) ? count($loans) : 0) + 1;
+
                 @endphp
 
                 @if($total_rows_alloances < $total_rows_deductions)
