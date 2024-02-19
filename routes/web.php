@@ -127,6 +127,7 @@ use App\Http\Controllers\Variables\WarningTypeController;
 use App\Http\Controllers\WarningController;
 use App\Models\User;
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\NssaEmployerTableController;
 use App\Http\Controllers\NssaTableController;
 use App\Http\Controllers\SalaryTaxCreditController;
 use App\Http\Controllers\UsdTaxTableController;
@@ -229,6 +230,8 @@ Route::group(['middleware' => ['XSS']], function () {
     Route::resource('zwl-taxtables', ZwlTaxTableController::class);
 
     Route::resource('nssa-taxtables', NssaTableController::class);
+    Route::resource('nssa-employer-taxtables', NssaEmployerTableController::class);
+
     Route::resource('zimdef-taxtables', ZimdefTableController::class);
 
     Route::get('usd-taxtables/delete/{id}', [UsdTaxTableController::class, 'destroy']);

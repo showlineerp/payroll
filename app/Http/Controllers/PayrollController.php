@@ -32,7 +32,8 @@ class PayrollController extends Controller
 
 	use TotalSalaryTrait;
 	use MonthlyWorkedHours;
-
+	
+	public $apwcs_contribution = [];
 	public function index(Request $request)
 	{
 		$logged_user = auth()->user();
@@ -1380,6 +1381,8 @@ class PayrollController extends Controller
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
 		Log::info("Inserted Nass");
+
+		
 		//ZWL
 		$data = [];
 		$data['employee_id'] = $employee->id;
