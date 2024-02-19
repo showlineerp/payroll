@@ -1125,7 +1125,15 @@ class ReportController extends Controller {
 								break;
 							}
 						}
-                        return  $amount;
+						$apwcws = EmployerNssaTaxTable::where('currency_symbol', $currency)->latest()->first();
+						if ($apwcws)
+						{
+							$apwcs = $amount * ($apwcws->posb_insuarance/100);
+						}else 
+						{
+							$apwcs  = 0;
+						}
+                        return  $amount + $apwcs;
 					})
                     ->addColumn('APWCS', function ($row) use( $currency)
 					{
