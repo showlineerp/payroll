@@ -27,7 +27,7 @@
             </div>
             @endif
         </div>
-        <form method="post" id="sample_form" action="{{route('nssa-taxtables.store')}}" class="form-horizontal" enctype="multipart/form-data">
+        <form method="post" id="sample_form" action="{{route('nssa-employer-taxtables.store')}}" class="form-horizontal" enctype="multipart/form-data">
 
             @csrf
             <div class="row">
@@ -44,9 +44,10 @@
                         @endif
                     </select>
                 </div>
-             
-                    <input type="hidden" step=".01" value="0" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
-             
+                <div class="form-group col-md-6">
+                    <label>{{__('APWCS Contribution')}} * <small class="text-muted">%</small></label>
+                    <input type="number" step=".01" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
+                </div>
                 <div class="form-group col-md-6">
                     <label>{{__('Insuarable deductions')}} * <small class="text-muted">%</small></label>
                     <input type="number" step=".01" name="posb_insuarance" id="posb_insuarance" placeholder="Percentage" required class="form-control text-left">
@@ -70,7 +71,7 @@
                         <th>Currency</th>
                         <th>Insuarable Deductions</th>
                         <th>Deduction Ceiling</th>
-                     
+                        <th>APWCS Contribution</th>
                         <th>Updated By</th>
                         <th class="not-exported">{{trans('file.action')}}</th>
                     </tr>
@@ -89,12 +90,14 @@
                         <td>
                             {{ $n->currency. number_format($n->insuarance_ceiling) }}
                         </td>
-                       
+                        <td>
+                            {{ $n->posb_contribution }}%
+                        </td>
                         <td>
                             {{ $n->last_updated_by }}
                         </td>
                         <td>
-                            <a href="{{route('nssa-taxtables.edit', ['nssa_taxtable'=> $n->id])}}" class="btn btn-info">update</a>
+                            <a href="{{route('nssa-employer-taxtables.edit', ['nssa_employer_taxtable'=> $n->id])}}" class="btn btn-info">update</a>
                         </td>
                     </tr>
                     @endforeach

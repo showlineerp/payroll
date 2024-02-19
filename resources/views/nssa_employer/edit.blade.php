@@ -26,7 +26,7 @@
             </div>
             @endif
         </div>
-        <form method="post" id="sample_form" action="{{route('nssa-taxtables.update', ['nssa_taxtable'=> $n->id])}}" class="form-horizontal" enctype="multipart/form-data">
+        <form method="post" id="sample_form" action="{{route('nssa-employer-taxtables.update', ['nssa_employer_taxtable'=> $n->id])}}" class="form-horizontal" enctype="multipart/form-data">
             @method('put')
             @csrf
             <div class="row">
@@ -51,8 +51,10 @@
                     <label>{{__('Insuarable deductions Ceiling')}} *</label>
                     <input type="number" step=".01" value="{{$n->insuarance_ceiling}}" name="insuarance_ceiling" id="insuarance_ceiling" placeholder="Insuarable ceiling" required class="form-control text-left">
                 </div>
-              
-                    <input type="hidden" value="0" step=".01" value="{{$n->posb_contribution}}" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
+                <div class="form-group col-md-4">
+                    <label>{{__('APWCS Contribution')}} * <small class="text-muted">%</small></label>
+                    <input type="number" step=".01" value="{{$n->posb_contribution}}" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
+                </div>
             </div>
             <button class="btn btn-primary" type="submit">Update</button>
 

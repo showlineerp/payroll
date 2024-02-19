@@ -16,7 +16,8 @@ class Payslip extends Model
 		'loans' => 'array',
 		'deductions' => 'array',
 		'other_payments' => 'array',
-		'tax_credits' =>'array'
+		'tax_credits' =>'array',
+		'apwcs_contribution'=> 'array',
 	];
 
 

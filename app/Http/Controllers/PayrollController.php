@@ -32,7 +32,8 @@ class PayrollController extends Controller
 
 	use TotalSalaryTrait;
 	use MonthlyWorkedHours;
-
+	
+	public $apwcs_contribution = [];
 	public function index(Request $request)
 	{
 		$logged_user = auth()->user();
@@ -1380,6 +1381,8 @@ class PayrollController extends Controller
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
 		Log::info("Inserted Nass");
+
+		
 		//ZWL
 		$data = [];
 		$data['employee_id'] = $employee->id;
@@ -1396,33 +1399,33 @@ class PayrollController extends Controller
 		SalaryDeduction::create($data);
 
 
-		$data = [];
-		$data['employee_id'] = $employee->id;
-		$data['month_year'] = $month_year;
-		$data['first_date'] = $first_date;
-		$data['deduction_title'] = 'NSSA APWCS Contribution';
-		$data['is_nssa_contribution'] = true;
-		$data['insuarable_amount'] = $gross_salary;
-		$data['deduction_amount'] = $APWCS_contribution;
-		$data['deduction_type'] = 'Other Statutory Deduction';
-		$data['created_at'] = Carbon::now();
-		$data['updated_at'] = Carbon::now();
-		SalaryDeduction::create($data);
+		// $data = [];
+		// $data['employee_id'] = $employee->id;
+		// $data['month_year'] = $month_year;
+		// $data['first_date'] = $first_date;
+		// $data['deduction_title'] = 'NSSA APWCS Contribution';
+		// $data['is_nssa_contribution'] = true;
+		// $data['insuarable_amount'] = $gross_salary;
+		// $data['deduction_amount'] = $APWCS_contribution;
+		// $data['deduction_type'] = 'Other Statutory Deduction';
+		// $data['created_at'] = Carbon::now();
+		// $data['updated_at'] = Carbon::now();
+		// SalaryDeduction::create($data);
 
-		//ZWL
-		$data = [];
-		$data['employee_id'] = $employee->id;
-		$data['month_year'] = $month_year;
-		$data['first_date'] = $first_date;
-		$data['deduction_title'] = 'NSSA APWCS Contribution';
-		$data['currency_symbol'] = 'ZWL';
-		$data['deduction_amount'] = $APWCS_contribution_zwl;
-		$data['is_nssa_contribution'] = true;
-		$data['insuarable_amount'] = $gross_salary_zwl;
-		$data['deduction_type'] = 'Other Statutory Deduction';
-		$data['created_at'] = Carbon::now();
-		$data['updated_at'] = Carbon::now();
-		SalaryDeduction::create($data);
+		// //ZWL
+		// $data = [];
+		// $data['employee_id'] = $employee->id;
+		// $data['month_year'] = $month_year;
+		// $data['first_date'] = $first_date;
+		// $data['deduction_title'] = 'NSSA APWCS Contribution';
+		// $data['currency_symbol'] = 'ZWL';
+		// $data['deduction_amount'] = $APWCS_contribution_zwl;
+		// $data['is_nssa_contribution'] = true;
+		// $data['insuarable_amount'] = $gross_salary_zwl;
+		// $data['deduction_type'] = 'Other Statutory Deduction';
+		// $data['created_at'] = Carbon::now();
+		// $data['updated_at'] = Carbon::now();
+		// SalaryDeduction::create($data);
 		DB::commit();
 	}catch (Throwable $e){
 		Log::error($e->getMessage());
@@ -1430,4 +1433,11 @@ class PayrollController extends Controller
 	}
 	}
 	
+	public function get_zimra_account(){
+
+	}
+	
+	public function get_nssa_account(){
+
+	}
 }
