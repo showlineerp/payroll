@@ -51,10 +51,8 @@
                     <label>{{__('Insuarable deductions Ceiling')}} *</label>
                     <input type="number" step=".01" value="{{$n->insuarance_ceiling}}" name="insuarance_ceiling" id="insuarance_ceiling" placeholder="Insuarable ceiling" required class="form-control text-left">
                 </div>
-                <div class="form-group col-md-4">
-                    <label>{{__('APWCS Contribution')}} * <small class="text-muted">%</small></label>
-                    <input type="number" step=".01" value="{{$n->posb_contribution}}" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
-                </div>
+              
+                    <input type="hidden" value="0" step=".01" value="{{$n->posb_contribution}}" name="posb_contribution" id="posb_contribution" placeholder="Percentage" required class="form-control text-left">
             </div>
             <button class="btn btn-primary" type="submit">Update</button>
 

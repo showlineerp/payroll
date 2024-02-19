@@ -1433,4 +1433,11 @@ class PayrollController extends Controller
 	}
 	}
 	
+	public function get_zimra_account(){
+
+	}
+	
+	public function get_nssa_account(){
+
+	}
 }

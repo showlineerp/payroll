@@ -70,7 +70,7 @@
                         <th>Currency</th>
                         <th>Insuarable Deductions</th>
                         <th>Deduction Ceiling</th>
-                        <th>APWCS Contribution</th>
+                     
                         <th>Updated By</th>
                         <th class="not-exported">{{trans('file.action')}}</th>
                     </tr>
@@ -89,9 +89,7 @@
                         <td>
                             {{ $n->currency. number_format($n->insuarance_ceiling) }}
                         </td>
-                        <td>
-                            {{ $n->posb_contribution }}%
-                        </td>
+                       
                         <td>
                             {{ $n->last_updated_by }}
                         </td>
