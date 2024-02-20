@@ -9,7 +9,7 @@
                     <div class="wrapper count-title  mb-30px ">
                         <div class="box mb-4">
                             <div class="box-header with-border text-center">
-                                <h3 class="box-title py-2"> {{__('Zimra Report')}} <span id="details_month_year"></span> </h3>
+                                <h3 class="box-title py-2"> {{__('Nssa P4 Report')}} <span id="details_month_year"></span> </h3>
                             </div>
                             <div class="box-body">
                                 <div class="row">

@@ -424,6 +424,11 @@
                                             href="{{route('report.nssa-p4')}}">{{__('Nssa P4 Form')}}</a>
                                 </li>
                             @endcan
+                            @can('report-expense')
+                                <li id="expense_report"><a
+                                            href="{{route('report.nssa-employer')}}">{{__('Nssa Employer')}}</a>
+                                </li>
+                            @endcan
                           
                         </ul>
                     </li>
