@@ -518,6 +518,7 @@ Route::group(['middleware' => ['XSS']], function () {
         Route::get('pension', [ReportController::class, 'pension'])->name('report.pension');
         Route::get('nssa', [ReportController::class, 'nssa'])->name('report.nssa');
         Route::get('nssa-p4', [ReportController::class, 'nssa_p4'])->name('report.nssa-p4');
+        Route::get('nssa-employer', [ReportController::class, 'nssa_employer'])->name('report.nssa-employer');
 
         Route::get('zimra', [ReportController::class, 'zimra'])->name('report.zimra');
     });

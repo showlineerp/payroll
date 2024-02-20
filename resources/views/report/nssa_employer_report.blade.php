@@ -9,7 +9,7 @@
                     <div class="wrapper count-title  mb-30px ">
                         <div class="box mb-4">
                             <div class="box-header with-border text-center">
-                                <h3 class="box-title py-2"> {{__('Nssa Report')}} <span id="details_month_year"></span> </h3>
+                                <h3 class="box-title py-2"> {{__('Nssa Employer Report')}} <span id="details_month_year"></span> </h3>
                             </div>
                             <div class="box-body">
                                 <div class="row">
@@ -105,6 +105,7 @@
                                     <th>{{__('End Date')}}</th>
                                     <th>{{__('POSB Insuarable')}}</th>
                                     <th>{{__('POSB Insuarance')}}</th>
+                                    <th>{{__('APWCS Contribution')}}</th>
                                 </tr>
                                 </thead>
                             </table>
@@ -194,6 +195,10 @@
                         {
                             data: 'posb_insuarance',
                             name: 'posb_insuarance'
+                        },
+                        {
+                            data: 'APWCS',
+                            name: 'APWCS'
                         },
 
                     ],
