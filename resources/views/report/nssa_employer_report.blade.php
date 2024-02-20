@@ -96,16 +96,20 @@
                             <table id="pension_report-table" class="table ">
                                 <thead>
                                 <tr>
-                                    <th>{{__('Employee Name')}}</th>
-                                    <th>{{__('SSN Number')}}</th>
-                                    <th>{{__('Nationa ID')}}</th>
-                                    <th>{{__('Birth Date')}}</th>
+                                    <th>{{__('SSRNumber')}}</th>
+                                    <th>{{__('WorksNumber')}}</th>
+                                    <th>{{__('SSNNumber')}}</th>
+                                    <th>{{__('NationalIDNumber')}}</th>
                                     <th>{{__('Period')}}</th>
-                                    <th>{{__('Start Date')}}</th>
-                                    <th>{{__('End Date')}}</th>
-                                    <th>{{__('POSB Insuarable')}}</th>
-                                    <th>{{__('POSB Insuarance')}}</th>
-                                    <th>{{__('APWCS Contribution')}}</th>
+                                    <th>{{__('BirthDate')}}</th>
+                                    <th>{{__('Surname')}}</th>
+                                    <th>{{__('Firstname')}}</th>
+                                    <th>{{__('StartDate')}}</th>
+                                    <th>{{__('EndDate')}}</th>
+                                    <th>{{__('POSBInsuarableEarnings')}}</th>
+                                    <th>{{__('POSContributions')}}</th>
+                                    <th>{{__('BasicAPWCS')}}</th>
+                                    <th>{{__('ActualInsuarableEarnings')}}</th>
                                 </tr>
                                 </thead>
                             </table>
@@ -140,8 +144,9 @@
 
             function fill_datatable(filter_company = '', filter_employee = '', filter_month_year = '', currency_symbol='$') {
                 $('#details_month_year').html($('#month_year').val());
+                filter_month_year = filter_month_year == ''? $('#month_year').val(): filter_month_year;
                 let table_table = $('#pension_report-table').DataTable({
-                    responsive: true,
+                    responsive: false,
                     fixedHeader: {
                         header: true,
                         footer: true
@@ -149,7 +154,7 @@
                     processing: true,
                     serverSide: true,
                     ajax: {
-                        url: "{{ route('report.nssa') }}",
+                        url: "{{ route('report.nssa-p4') }}",
                         data: {
                             filter_company: filter_company,
                             filter_employee: filter_employee,
@@ -161,8 +166,12 @@
 
                     columns: [
                         {
-                            data: 'employee_name',
-                            name: 'employee_name'
+                            data: 'ssr_number',
+                            name: 'ssr_number'
+                        },
+                        {
+                            data: 'works_number',
+                            name: 'works_number'
                         },
                         {
                             data: 'ssn_number',
@@ -173,12 +182,20 @@
                             name: 'national_id'
                         },
                         {
+                            data: 'period',
+                            name: 'period'
+                        },
+                        {
                             data: 'birth_date',
                             name: 'birth_date'
                         },
                         {
-                            data: 'month_year',
-                            name: 'month_year'
+                            data: 'surname',
+                            name: 'surname'
+                        },
+                        {
+                            data: 'first_name',
+                            name: 'first_name'
                         },
                         {
                             data: 'joining_date',
@@ -199,6 +216,10 @@
                         {
                             data: 'APWCS',
                             name: 'APWCS'
+                        },
+                        {
+                            data: 'posb_insuarable2',
+                            name: 'posb_insuarable2'
                         },
 
                     ],
