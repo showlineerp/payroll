@@ -1380,7 +1380,7 @@ class PayrollController extends Controller
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
 		SalaryDeduction::create($data);
-		Log::info("Inserted Nass");
+		Log::info("Inserted Nassa");
 
 		
 		//ZWL
