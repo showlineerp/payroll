@@ -154,7 +154,7 @@
                     processing: true,
                     serverSide: true,
                     ajax: {
-                        url: "{{ route('report.nssa-p4') }}",
+                        url: "{{ route('report.nssa-employer') }}",
                         data: {
                             filter_company: filter_company,
                             filter_employee: filter_employee,
