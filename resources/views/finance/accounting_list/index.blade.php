@@ -26,6 +26,7 @@
                 <tr>
                     <th class="not-exported"></th>
                     <th>{{trans('file.Accounts')}}</th>
+                    <th>{{trans('Currency')}}</th>
                     <th>{{__('Account No.')}}</th>
                     <th>{{__('Branch Code')}}</th>
                     @if(config('variable.currency_format')=='suffix')
@@ -58,7 +59,13 @@
                     <div class="modal-body">
                         @csrf
                         <div class="row">
-
+                        <div class="col-md-6 form-group">
+                                <label>{{__('Account Currency')}} *</label>
+                             <select name="currency_symbol" id="currency_symbol" class="form-control">
+                              <option value="ZWL">ZWL </option>
+                              <option value="$">USD </option>
+                             </select>
+                            </div>
 
                             <div class="col-md-6 form-group">
                                 <label>{{__('Account Name')}} *</label>
@@ -68,9 +75,9 @@
 
                             <div class="col-md-6 form-group">
                                 @if(config('variable.currency_format')=='suffix')
-                                    <label>{{__('Initial Balance')}} ({{config('variable.currency')}})*</label>
+                                    <label>{{__('Initial Balance')}} *</label>
                                 @else
-                                    <label>({{config('variable.currency')}}) {{__('Initial Balance')}}*</label>
+                                    <label>{{__('Initial Balance')}}*</label>
                                 @endif
                                 <input type="text" name="initial_balance" id="initial_balance" required
                                        class="form-control"
@@ -186,10 +193,13 @@
                         orderable: false,
                         searchable: false
                     },
-
                     {
                         data: 'account_name',
                         name: 'account_name',
+                    },
+                    {
+                        data: 'currency_symbol',
+                        name: 'currency_symbol',
                     },
                     {
                         data: 'account_number',
@@ -388,8 +398,7 @@
                     $('#initial_balance').val(html.data.account_balance);
                     $('#bank_branch').val(html.data.bank_branch);
                     $('#branch_code').val(html.data.branch_code);
-
-
+                    $("#currency_symbol").val(html.data.currency_symbol);
                     $('#hidden_id').val(html.data.id);
 
                     $('.modal-title').text('{{trans('file.Edit')}}');

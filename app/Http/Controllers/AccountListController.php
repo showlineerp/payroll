@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
 use App\Models\FinanceBankCash;
 use App\Models\GeneralSetting;
 use Illuminate\Http\Request;
@@ -48,8 +49,8 @@ class AccountListController extends Controller {
 					rawColumns(['action', 'account_name'])
 					->make(true);
 			}
-
-			return view('finance.accounting_list.index');
+			$currencies = Currency::get()->pluck('name','id')->toArray();
+			return view('finance.accounting_list.index', compact('currencies'));
 		}
 
 		return abort('403', __('You are not authorized'));
@@ -70,11 +71,12 @@ class AccountListController extends Controller {
 
 		if ($logged_user->can('store-account'))
 		{
-			$validator = Validator::make($request->only('account_name', 'initial_balance', 'account_number', 'branch_code', 'bank_branch'),
+			$validator = Validator::make($request->only('account_name', 'initial_balance', 'account_number', 'branch_code', 'bank_branch', 'currency_symbol'),
 				[
 					'account_name' => 'required|unique:finance_bank_cashes,account_name,',
 					'initial_balance' => 'required|numeric',
 					'account_number' => 'required|numeric',
+					'currrency_symbol' => 'required',
 					'branch_code' => 'required',
 					'bank_branch' => 'required',
 				]);
@@ -134,11 +136,12 @@ class AccountListController extends Controller {
 		{
 			$id = $request->hidden_id;
 
-			$validator = Validator::make($request->only('account_name', 'initial_balance', 'account_number', 'branch_code', 'bank_branch'),
+			$validator = Validator::make($request->only('account_name', 'initial_balance', 'account_number', 'branch_code', 'bank_branch', 'currency_symbol'),
 				[
 					'account_name' => 'required|unique:finance_bank_cashes,account_name,' . $id,
 					'initial_balance' => 'required',
 					'account_number' => 'required',
+					'currency_symbol' => 'required',
 					'branch_code' => 'required',
 					'bank_branch' => 'required',
 				]);
@@ -158,6 +161,7 @@ class AccountListController extends Controller {
 			$data['branch_code'] = $request->branch_code;
 			$data['bank_branch'] = $request->bank_branch;
 			$data ['account_balance'] = $request->initial_balance;
+			$data ['currency_symbol'] = $request->currency_symbol;
 
 			FinanceBankCash::whereId($id)->update($data);
 
@@ -238,7 +242,7 @@ class AccountListController extends Controller {
 		{
 			if (request()->ajax())
 			{
-				return datatables()->of(FinanceBankCash::select('id', 'account_name', 'account_balance')->get())
+				return datatables()->of(FinanceBankCash::select('id', 'account_name', 'account_balance', 'currency_symbol')->get())
 					->setRowId(function ($bankCash)
 					{
 						return $bankCash->id;

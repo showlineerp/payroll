@@ -7,21 +7,21 @@
             <h2>{{__('Account Balances')}}</h2>
         </div>
 
-
         <div class="table-responsive">
             <table id="account_balance-table" class="table ">
                 <thead>
                 <tr>
                     <th>{{trans('file.Account')}}</th>
+                    <th>{{trans('Currency')}}</th>
                     @if(config('variable.currency_format')=='suffix')
-                        <th>{{trans('file.Balance')}} ({{config('variable.currency')}})</th>
+                        <th>{{trans('file.Balance')}} </th>
                     @else
-                        <th>({{config('variable.currency')}}) {{trans('file.Balance')}}</th>
+                        <th> {{trans('file.Balance')}}</th>
                     @endif
                 </tr>
                 </thead>
 
-                <tfoot>
+                <!-- <tfoot>
                 <tr>
                     @if(config('variable.currency_format')=='suffix')
                         <th>{{trans('file.Total')}} ({{config('variable.currency')}})</th>
@@ -29,8 +29,9 @@
                         <th>({{config('variable.currency')}}) {{trans('file.Total')}}</th>
                     @endif
                     <th></th>
+                    <th></th>
                 </tr>
-                </tfoot>
+                </tfoot> -->
 
             </table>
         </div>
@@ -86,9 +87,7 @@
                      }, 0 );
 
                  // Update footer
-                 $( api.column( 1 ).footer() ).html(
-                     +pageTotal +' ('+ total +' {{trans('file.Total')}})'
-                 );
+               
              },
 
                 responsive: true,
@@ -106,6 +105,10 @@
                     {
                         data: 'account_name',
                         name: 'account_name',
+                    },
+                    {
+                        data: 'currency_symbol',
+                        name: 'currency_symbol',
                     },
                     {
                         data: 'account_balance',
