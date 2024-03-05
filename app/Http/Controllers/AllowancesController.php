@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Allowances;
 use App\Models\company;
 use App\Models\Currency;
+use App\Models\department;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AllowancesController extends Controller
 {
@@ -18,6 +21,9 @@ class AllowancesController extends Controller
 
 		if ($logged_user->can('view-details-employee')) {
 			$currencies = Currency::get();
+            $employees = Employee::get();
+			$companies = company::get();
+			$departments = department::get();
 			if (request()->ajax()) {
 				$salaryAllowance = Allowances::get();
 
@@ -39,7 +45,7 @@ class AllowancesController extends Controller
 					->rawColumns(['action'])
 					->make(true);
 			}
-			return view('allowances.index', compact('currencies'));
+			return view('allowances.index', compact('currencies', 'employees', 'companies', 'departments'));
 		}
 
 		return response()->json(['success' => __('You are not authorized')]);
@@ -57,39 +63,134 @@ class AllowancesController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
-    }
+	{
+		$logged_user = auth()->user();
+		if ($logged_user->can('store-details-employee')) {
+			$validator = Validator::make(
+				$request->only(
+					'month_year',
+					'allowance_title',
+					'allowance_amount',
+					'is_taxable',
+                    'employee_group'
+				),
+				[
+					'month_year' => 'required',
+					'allowance_title' => 'required',
+					'allowance_amount' => 'required|numeric',
+					'is_taxable' => 'required',
+                    'employee_group' => 'required'
+				]
+			);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Allowances $allowances)
-    {
-        //
-    }
+			if ($validator->fails()) {
+				return response()->json(['errors' => $validator->errors()->all()]);
+			}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Allowances $allowances)
-    {
-        //
-    }
+			$first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Allowances $allowances)
-    {
-        //
-    }
+			$currency = Currency::find($request->currency_id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Allowances $allowances)
-    {
-        //
-    }
+			$data = [];
+			$data['month_year'] = $request->month_year;
+			$data['first_date'] = $first_date;
+			$data['allowance_title'] = $request->allowance_title;
+			$data['employee_id'] = $employee->id;
+			$data['allowance_amount'] = $request->allowance_amount;
+			$data['is_taxable'] = $request->is_taxable;
+			$data['currency_id'] = $request->currency_id;
+			if ($request->is_taxable && empty($request->deductible_amt))
+			{
+				$data['deductible_amt'] = 100;
+			}else {
+				$data['deductible_amt'] = $request->deductible_amt;
+			}
+			if (!empty($currency)) {
+				$data['currency_symbol'] = $currency->symbol;
+			}
+			SalaryAllowance::create($data);
+
+			return response()->json(['success' => __('Data Added successfully.')]);
+		}
+
+		return response()->json(['success' => __('You are not authorized')]);
+	}
+
+	public function edit($id)
+	{
+		if (request()->ajax()) {
+			$data = SalaryAllowance::findOrFail($id);
+
+			return response()->json(['data' => $data]);
+		}
+	}
+
+	public function update(Request $request)
+	{
+		$logged_user = auth()->user();
+
+		if ($logged_user->can('modify-details-employee')) {
+			$id = $request->hidden_id;
+
+			$validator = Validator::make(
+				$request->only(
+					'month_year',
+					'allowance_title',
+					'allowance_amount',
+					'is_taxable'
+				),
+				[
+					'month_year' => 'required',
+					'allowance_title' => 'required',
+					'allowance_amount' => 'required|numeric',
+					'is_taxable' => 'required',
+				]
+			);
+
+			if ($validator->fails()) {
+				return response()->json(['errors' => $validator->errors()->all()]);
+			}
+
+			$first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
+
+			$currency = Currency::find($request->currency_id);
+			$data = [];
+			$data['month_year'] = $request->month_year;
+			$data['first_date'] = $first_date;
+			$data['allowance_title'] = $request->allowance_title;
+			$data['allowance_amount'] = $request->allowance_amount;
+			$data['is_taxable'] = $request->is_taxable;
+			$data['currency_id'] = $request->currency_id;
+			$data['deductible_amt'] = $request->deductible_amt;
+			if (!empty($currency)) {
+				$data['currency_symbol'] = $currency->symbol;
+			}
+			SalaryAllowance::whereId($id)->update($data);
+
+			return response()->json(['success' => __('Data is successfully updated')]);
+		}
+
+		return response()->json(['success' => __('You are not authorized')]);
+	}
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param int $id
+	 * @return Response
+	 */
+	public function destroy($id)
+	{
+		$logged_user = auth()->user();
+
+		if ($logged_user->can('modify-details-employee')) {
+			SalaryAllowance::whereId($id)->delete();
+
+			return response()->json(['success' => __('Data is successfully deleted')]);
+		}
+
+		return response()->json(['success' => __('You are not authorized')]);
+	}
+
+
 }

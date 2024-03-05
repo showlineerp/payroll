@@ -62,9 +62,59 @@
                                 <select name="employee_group" id="employee_group" required
                                         class="form-control selectpicker"
                                         title='{{__('Selecting', ['key' => __('Employee Group')])}}...'>
-                                    <option value="all">All</option>
+                                    <option value="all">All Employees</option>
+                                    <option value="company">Company</option>
                                     <option value="department">Department</option>
                                     <option value="select_employees">Select Employees</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group employee_groups company company_department">
+                                <label>{{__('Select Company')}} *</label>
+                                <select name="company" id="company_id" required 
+                                        class="form-control selectpicker dynamic"
+                                        data-dependent="department_name"
+                                        title='{{__('Selecting', ['key' => __('Employees')])}}...'>
+                                        @if($companies->isNotEmpty())
+                                            @foreach($companies as $company)
+                                                <option value="{{$company->id}}"> {{$company->company_name}}</option>
+                                            @endforeach
+                                       @endif
+                                  
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 form-group employee_groups company_department">
+                                <label>{{__('Select Department')}} *</label>
+                                <select name="department" id="department_id" required multiple
+                                        class="form-control selectpicker "
+                                        data-live-search="true" data-live-search-style="contains"
+                                        title='{{__('Selecting', ['key' => __('Departments')])}}...'>
+                                        @if($departments->isNotEmpty())
+                         
+                                            @foreach($departments as $department)
+                                        
+                                                <option value="{{$department->id}}"> {{$department->department_name}}</option>
+                                      
+                                            @endforeach
+                                       @endif
+                                  
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group employee_groups select_employees">
+                                <label>{{__('Select Employees')}} *</label>
+                                <select name="employees" id="employees" required multiple
+                                        class="form-control selectpicker"
+                                        data-live-search="true" data-live-search-style="contains"
+                                        title='{{__('Selecting', ['key' => __('Employees')])}}...'>
+                                        @if($employees->isNotEmpty())
+                         
+                                            @foreach($employees as $employee)
+                                        
+                                                <option value="{{$employee->id}}"> {{$employee->first_name. ' '. $employee->last_name}}</option>
+                                      
+                                            @endforeach
+                                       @endif
+                                  
                                 </select>
                             </div>
                             <div class="col-md-6 form-group">
@@ -93,7 +143,7 @@
                             <div class="col-md-6 form-group">
                             <label>{{ __('Taxable percentage') }} </label>
                                 <input type="number" name="deductible_amt" id="deductible_amt"
-                                       placeholder={{__('Deductible percentage')}}
+                                       placeholder={{__('Taxable percentage')}}
                                                 class="form-control text-left">
                             </div>
                             <div class="col-md-6 form-group">
@@ -115,9 +165,14 @@
                                                required class="form-control">
                             </div>
                             <div class="col-md-6 form-group">
-                            <div class="form-group form-check">
-                            <input type="checkbox" name="recurring" class="form-check-input" id="recurring">
-                            <label class="form-check-label" for="exampleCheck1">Recurring</label>
+                                <label>{{__('Recurring Allowance')}} *</label>
+                                <select name="is_recurring" id="is_recurring" required
+                                        class="form-control selectpicker"
+                                        title='{{__('Selecting', ['key' => __('Is Recurring')])}}...'>
+                                    <option value="0">Recurring</option>
+                                    <option value="1">Once Only</option>
+                                   
+                                </select>
                             </div>
 
                             <div class="container">
@@ -418,5 +473,48 @@ $('.allowance-ok').click(function () {
     })
 });
 
+$('.dynamic').change(function () {
+        if ($(this).val() !== '') {
+            let value = $(this).val();
+            let dependent = $(this).data('dependent');
+            let _token = $('input[name="_token"]').val();
+            $.ajax({
+                url: "{{ route('dynamic_department') }}",
+                method: "POST",
+                data: {value: value, _token: _token, dependent: dependent},
+                success: function (result) {
+
+                    $('select').selectpicker("destroy");
+                    $('#department_id').html(result);
+                    $('select').selectpicker();
+
+                }
+            });
+        }
+    });
+
+    $("#employee_group").change(function () {
+        const group = $(this).val();
+        console.log(group)
+        if (group == 'all')
+        {
+            $(".employee_groups").hide();
+        }else if (group == 'company')
+        {
+            $(".employee_groups").hide();
+            $(".company").show();
+        }else if (group == 'select_employees')
+        {
+            $(".employee_groups").hide();
+            $(".employees").show();
+        }else 
+        {
+            $(".employee_groups").hide();
+            $(".company_department").show();
+        }
+    })
+    $(document).ready(function () {
+        $(".employee_groups").hide();
+    })
     </script>
     @endpush
