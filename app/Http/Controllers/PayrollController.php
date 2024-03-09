@@ -651,8 +651,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -661,8 +664,11 @@ class PayrollController extends Controller
 							$query->where('first_date', '<=', $first_date)
 								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'deductions' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'deductions' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'otherPayments' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -686,8 +692,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -719,8 +728,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -729,8 +741,11 @@ class PayrollController extends Controller
 							$query->where('first_date', '<=', $first_date)
 								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'deductions' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'deductions' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'otherPayments' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
