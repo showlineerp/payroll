@@ -79,12 +79,30 @@
 
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label><strong>{{__('Default Bank')}} *</strong></label>
+                                            <label><strong>{{__('Default Bank USD')}} *</strong></label>
                                             <select name="account_id" id="account_id"  class="form-control selectpicker" required
                                                     data-live-search="true" data-live-search-style="contains"
                                                     title='{{__('Selecting',['key'=>trans('file.Account')])}}...'>
                                                 @foreach($accounts as $account)
+                                                @if($account->currency_symbol == '$')
+
                                                     <option value="{{$account->id}}" {{($account->id == $general_settings_data->default_payment_bank) ? 'selected':''}}>{{$account->account_name}}</option>
+                                                @endif
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label><strong>{{__('Default Bank ZWL')}} *</strong></label>
+                                            <select name="account_id_zwl" id="account_id_zwl"  class="form-control selectpicker" required
+                                                    data-live-search="true" data-live-search-style="contains"
+                                                    title='{{__('Selecting',['key'=>trans('file.Account')])}}...'>
+                                                @foreach($accounts as $account)
+                                                @if($account->currency_symbol == 'ZWL')
+                                                    <option value="{{$account->id}}" {{($account->id == $general_settings_data->default_payment_bank_zwl) ? 'selected':''}}>{{$account->account_name}}</option>
+                                                @endif
                                                 @endforeach
                                             </select>
                                         </div>
