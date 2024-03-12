@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('salary_allowances', function (Blueprint $table) {
+        Schema::table('salary_deductions', function (Blueprint $table) {
             //
             $table->boolean('is_recurring')->default(false);
+
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('salary_allwowances', function (Blueprint $table) {
+        Schema::table('salary_deductions', function (Blueprint $table) {
             //
         });
     }
