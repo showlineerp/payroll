@@ -28,6 +28,7 @@
                     @else
                         <th> {{__('Allowance Amount')}}</th>
                     @endif
+                    <th>{{__('Recurring')}}</th>
                     <th>{{__('Taxable Percentage')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
@@ -70,7 +71,7 @@
                             </div>
                             <div class="col-md-6 form-group employee_groups company company_department">
                                 <label>{{__('Select Company')}} *</label>
-                                <select name="company_id" id="company_id"  
+                                <select name="company_id" id="company"  
                                         class="form-control selectpicker dynamic"
                                         data-dependent="department_name"
                                         title='{{__('Selecting', ['key' => __('Employees')])}}...'>
@@ -85,7 +86,7 @@
 
                             <div class="col-md-6 form-group employee_groups company_department">
                                 <label>{{__('Select Department')}} *</label>
-                                <select name="department_id" id="department_id" 
+                                <select name="department_id" id="department" 
                                         class="form-control selectpicker "
                                         data-live-search="true" data-live-search-style="contains"
                                         title='{{__('Selecting', ['key' => __('Departments')])}}...'>
@@ -303,6 +304,13 @@ var table_table = $('#allowance-table').DataTable({
             }
         },
         {
+                data: 'is_recurring',
+                name: 'is_recurring',
+                render: function (data) {
+                    return data = data ? 'Yes': 'No'
+                }
+            },
+        {
             data: 'deductible_amt',
             name: 'taxable_percentage',
             render: function (data) {
@@ -440,6 +448,10 @@ $(document).on('click', '.allowance_edit', function () {
             $('#currency_id').val(html.data.currency_id);
             $('#deductible_amt').val(html.data.deductible_amt);
             $('#allowance_is_taxable').selectpicker('val', html.data.is_taxable);
+            $('#is_recurring').selectpicker('val', html.data.is_recurring);
+            $('#employees').selectpicker('val', html.data.employee_id);
+            $('#department').selectpicker('val', html.data.department_id);
+            $('#company').selectpicker('val', html.data.company_id);
 
             $('#allowance_hidden_id').val(html.data.id);
             $('.modal-title').text('{{trans('file.Edit')}}');

@@ -30,9 +30,8 @@ class SalaryAllowanceController extends Controller
 					})
 					->addColumn('action', function ($data) {
 						if (auth()->user()->can('modify-details-employee')) {
-							$button = '<button type="button" name="edit" id="' . $data->id . '" class="allowance_edit btn btn-primary btn-sm"><i class="dripicons-pencil"></i></button>';
-							$button .= '&nbsp;&nbsp;';
-							$button .= '<button type="button" name="delete" id="' . $data->id . '" class="allowance_delete btn btn-danger btn-sm"><i class="dripicons-trash"></i></button>';
+						
+							$button = '<button type="button" name="delete" id="' . $data->id . '" class="allowance_delete btn btn-danger btn-sm"><i class="dripicons-trash"></i></button>';
 
 							return $button;
 						} else {
@@ -71,17 +70,17 @@ class SalaryAllowanceController extends Controller
 			$first_date = date('Y-m-d', strtotime('first day of ' . $request->month_year));
 
 			$builk_allowance = Allowances::find($request->allowance_id);
-			if (!empty($builk_allowance->employee_id)) {
-				$employees = explode(",", $builk_allowance->employee_id);
-				if (in_array($request->alllowance_id, $employees) && ($builk_allowance->month_year == $request->month_year || $builk_allowance->is_recurring)) {
-					return response()->json(["errors" => 
-					["code" => 'allowance', 'message' => 'That allowance already exists for this user this month']]);
-				}
+			$is_available = SalaryAllowance::where('allowance_id', $request->allowance_id)->where('month_year', $request->month_year)->first();
+			if (!empty($is_available))
+			{
+				return response()->json(["errors" => 
+				[[ 'That allowance already exists for this user this month']]]);
+		
 			}
 			$data = [];
 			$data['month_year'] = $request->month_year;
 			$data['first_date'] = $first_date;
-			$data['allowances_id'] = $builk_allowance->id;
+			$data['allowance_id'] = $builk_allowance->id;
 			$data['allowance_title'] = $builk_allowance->allowance_title;
 			$data['employee_id'] = $employee->id;
 			$data['allowance_amount'] = $builk_allowance->allowance_amount;

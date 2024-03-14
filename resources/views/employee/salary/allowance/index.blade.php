@@ -23,6 +23,7 @@
                     @else
                         <th> {{__('Allowance Amount')}}</th>
                     @endif
+                    <th>{{__('Recurring')}}</th>
                     <th>{{__('Taxable Percentage')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>

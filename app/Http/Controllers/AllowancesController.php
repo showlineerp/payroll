@@ -170,12 +170,13 @@ class AllowancesController extends Controller
 			$data['allowance_title'] = $request->allowance_title;
 			$data['allowance_amount'] = $request->allowance_amount;
 			$data['is_taxable'] = $request->is_taxable;
+			$data['is_recurring'] = $request->is_recurring;
 			$data['currency_id'] = $request->currency_id;
 			$data['deductible_amt'] = $request->deductible_amt;
 			if (!empty($currency)) {
 				$data['currency_symbol'] = $currency->symbol;
 			}
-			SalaryAllowance::whereId($id)->update($data);
+			Allowances::whereId($id)->update($data);
 
 			return response()->json(['success' => __('Data is successfully updated')]);
 		}
@@ -206,7 +207,11 @@ class AllowancesController extends Controller
 	{
 		$employees = null;
 		$employee_arr = [];
-		if ($request->employee_group == 'company') {
+		if ($request->employee_group == 'all') {
+			$employee_arr = Employee::pluck('id')->toArray();
+			$employees =  implode(",", $employee_arr);
+		}
+		else if ($request->employee_group == 'company') {
 			$employee_arr = Employee::where('company_id', $request->company_id)->pluck('id')->toArray();
 			$employees =  implode(",", $employee_arr);
 		} else if ($request->employee_group == 'department') {
