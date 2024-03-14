@@ -30,7 +30,7 @@ class GeneralSettingController extends Controller
 		if (auth()->user()->can('view-general-setting'))
 		{
 			$general_settings_data = GeneralSetting::latest()->first();
-			$accounts = FinanceBankCash::all('id', 'account_name');
+			$accounts = FinanceBankCash::all('id', 'account_name','currency_symbol');
 			$zones_array = array();
 			$timestamp = time();
 
@@ -97,12 +97,11 @@ class GeneralSettingController extends Controller
 
 			$searchArray = array(
 				config('variable.currency'),
-				config('variable.currency_format'), config('variable.account_id'));
+				config('variable.currency_format'), config('variable.account_id'), config('variable.account_id_zwl'));
 
-			$replaceArray = array($request->currency, $request->currency_format, $request->account_id);
+			$replaceArray = array($request->currency, $request->currency_format, $request->account_id, $request->account_id_zwl);
 
 			file_put_contents($path, str_replace($searchArray, $replaceArray, file_get_contents($path)));
-
 
 			$general_setting = GeneralSetting::findOrFail($id);
 			$general_setting->id = 1;
@@ -112,6 +111,7 @@ class GeneralSettingController extends Controller
 			$general_setting->currency_format = $data['currency_format'];
 			$general_setting->date_format = $data['date_format'];
 			$general_setting->default_payment_bank = $data['account_id'];
+			$general_setting->default_payment_bank_zwl = $data['account_id_zwl'];
 			$general_setting->footer = $request->footer;
 			$general_setting->footer_link = $request->footer_link;
 			$general_setting->show_leave_payslip = $request->show_leave_payslip;

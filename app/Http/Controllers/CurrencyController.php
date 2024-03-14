@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Allowances;
 use App\Models\company;
 use App\Models\Currency;
 use App\Models\CurrencyRate;
@@ -18,56 +19,35 @@ class CurrencyController extends Controller
      */
     public function index(Request $request)
     {
-        $logged_user = auth()->user();
-        if ($logged_user->can('view-details-employee')) {
-            $companies = company::select('id', 'company_name')->get();
-            $currencies = Currency::with(['latestRate', 'company'])->get();
+    	$logged_user = auth()->user();
 
-            $currentDate = date('Y-m-d');
+		if ($logged_user->can('view-details-employee')) {
+			$currencies = Currency::get();
+			if (request()->ajax()) {
+				$salaryAllowance = Allowances::get();
 
-            if (request()->ajax()) {
+				return datatables()->of($salaryAllowance)
+					->setRowId(function ($allowance) {
+						return $allowance->id;
+					})
+					->addColumn('action', function ($data) {
+						if (auth()->user()->can('modify-details-employee')) {
+							$button = '<button type="button" name="edit" id="' . $data->id . '" class="allowance_edit btn btn-primary btn-sm"><i class="dripicons-pencil"></i></button>';
+							$button .= '&nbsp;&nbsp;';
+							$button .= '<button type="button" name="delete" id="' . $data->id . '" class="allowance_delete btn btn-danger btn-sm"><i class="dripicons-trash"></i></button>';
 
+							return $button;
+						} else {
+							return '';
+						}
+					})
+					->rawColumns(['action'])
+					->make(true);
+			}
+			return view('allowances.index', compact('employee', 'currencies'));
+		}
 
-                return datatables()->of($currencies)
-                    ->setRowId(function ($row) {
-                        return $row->id;
-                    })
-                    ->addColumn('name', function ($row) {
-                        return "<span>" . $row->name . "</span>";
-                    })
-                    ->addColumn('rate', function ($row) {
-                        return  $row->latestRate->rate;
-                    })
-                    ->addColumn('rate_updated', function ($row) {
-                        return date('d/m/Y', strtotime($row->latestRate->updated_at));
-                    })
-                    ->addColumn('company', function ($row) {
-                        $company = "<span class='text-bold'>" . strtoupper($row->company->company_name ?? '') . '</span>';
-                        return $company;
-                    })
-
-                    ->addColumn('action', function ($data) {
-                        $button = '';
-                        if (auth()->user()->can('view-details-employee')) {
-                            $button .= '<a href="' . route('currency.edit', ['currency' => $data->id]) . '"  class="edit btn btn-primary btn-sm" data-toggle="tooltip" data-placement="top" title="View Details"><i class="dripicons-preview"></i></button></a>';
-                            $button .= '&nbsp;&nbsp;&nbsp;';
-                        }
-                        // if (auth()->user()->can('modify-details-employee')) {
-                        //     if ($data->role_users_id != 1) {
-                        //         $button .= '<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Delete"><i class="dripicons-trash"></i></button>';
-                        //         $button .= '&nbsp;&nbsp;&nbsp;';
-                        //     }
-                        // }
-
-                        return $button;
-                    })
-                    ->rawColumns(['name', 'company', 'currency', 'action'])
-                    ->make(true);
-            }
-            return view('currency.index', compact('companies', 'currencies'));
-        } else {
-            return response()->json(['success' => __('You are not authorized')]);
-        }
+		return response()->json(['success' => __('You are not authorized')]);
     }
 
     /**

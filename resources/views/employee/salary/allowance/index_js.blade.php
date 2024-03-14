@@ -70,6 +70,13 @@
                 }
             },
             {
+                data: 'is_recurring',
+                name: 'is_recurring',
+                render: function (data) {
+                    return data = data ? 'Yes': 'No'
+                }
+            },
+            {
                 data: 'deductible_amt',
                 name: 'taxable_percentage',
                 render: function (data) {

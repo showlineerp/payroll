@@ -101,7 +101,29 @@
                         </ul>
                     </li>
                 @endcan
-                
+                @can('view-details-employee')
+                    <li class="has-dropdown {{ (request()->is('allowances*')) ? 'active' : '' }}">
+                        <a href="#allowances" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>{{trans('Allowances')}}</span></a>
+                        <ul id="allowances" class="collapse list-unstyled ">
+                            @can('view-details-employee')
+                                <li id="usd_tax_table"><a href="{{route('allowance.index')}}">{{__('Organization allowances')}}</a></li>
+                            @endcan
+                            
+                        </ul>
+                    </li>
+                @endcan
+                @can('view-details-employee')
+                    <li class="has-dropdown {{ (request()->is('deductions*')) ? 'active' : '' }}">
+                        <a href="#deductions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>{{trans('Deductions')}}</span></a>
+                        <ul id="deductions" class="collapse list-unstyled ">
+                            @can('view-details-employee')
+                                <li id="usd_tax_table"><a href="{{route('usd-taxtables.index')}}">{{__('Organization Deductions')}}</a></li>
+                            @endcan
+                            
+                        </ul>
+                    </li>
+                @endcan
+
 
                 @can('customize-setting')
                     <li class="has-dropdown {{ (request()->is('settings*')) ? 'active' : '' }}">

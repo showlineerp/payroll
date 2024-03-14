@@ -68,6 +68,7 @@ use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\AddonController;
+use App\Http\Controllers\AllowancesController;
 use App\Http\Controllers\OfficeShiftController;
 use App\Http\Controllers\OfficialDocumentController;
 use App\Http\Controllers\PayrollController;
@@ -223,6 +224,8 @@ Route::group(['middleware' => ['XSS']], function () {
     Route::post('/mass_assign', [AssignRoleController::class, 'mass_update'])->name('mass_assign_role');
 
 
+    //Allowances 
+    Route::resource('allowance', AllowancesController::class);
     //Currencies 
 
     Route::resource('currency', CurrencyController::class);

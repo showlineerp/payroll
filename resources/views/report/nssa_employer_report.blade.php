@@ -96,20 +96,12 @@
                             <table id="pension_report-table" class="table ">
                                 <thead>
                                 <tr>
-                                    <th>{{__('SSRNumber')}}</th>
-                                    <th>{{__('WorksNumber')}}</th>
-                                    <th>{{__('SSNNumber')}}</th>
-                                    <th>{{__('NationalIDNumber')}}</th>
-                                    <th>{{__('Period')}}</th>
-                                    <th>{{__('BirthDate')}}</th>
-                                    <th>{{__('Surname')}}</th>
-                                    <th>{{__('Firstname')}}</th>
-                                    <th>{{__('StartDate')}}</th>
-                                    <th>{{__('EndDate')}}</th>
-                                    <th>{{__('POSBInsuarableEarnings')}}</th>
-                                    <th>{{__('POSContributions')}}</th>
+
+                                    <th>{{__('Employee Name')}}</th>
+                                    <th>{{__('Total Salary')}}</th>
+                                    <th>{{__('Total POSB')}}</th>
                                     <th>{{__('BasicAPWCS')}}</th>
-                                    <th>{{__('ActualInsuarableEarnings')}}</th>
+                                    
                                 </tr>
                                 </thead>
                             </table>
@@ -165,46 +157,12 @@
                     },
 
                     columns: [
+                      
                         {
-                            data: 'ssr_number',
-                            name: 'ssr_number'
+                            data: 'full_name',
+                            name: 'full_name'
                         },
-                        {
-                            data: 'works_number',
-                            name: 'works_number'
-                        },
-                        {
-                            data: 'ssn_number',
-                            name: 'ssn_number'
-                        },
-                        {
-                            data: 'national_id',
-                            name: 'national_id'
-                        },
-                        {
-                            data: 'period',
-                            name: 'period'
-                        },
-                        {
-                            data: 'birth_date',
-                            name: 'birth_date'
-                        },
-                        {
-                            data: 'surname',
-                            name: 'surname'
-                        },
-                        {
-                            data: 'first_name',
-                            name: 'first_name'
-                        },
-                        {
-                            data: 'joining_date',
-                            name: 'joining_date'
-                        },
-                        {
-                            data: 'exit_date',
-                            name: 'exit_date'
-                        },
+                       
                         {
                             data: 'posb_insuarable',
                             name: 'posb_insuarable'
@@ -216,12 +174,7 @@
                         {
                             data: 'APWCS',
                             name: 'APWCS'
-                        },
-                        {
-                            data: 'posb_insuarable2',
-                            name: 'posb_insuarable2'
-                        },
-
+                        }
                     ],
 
 

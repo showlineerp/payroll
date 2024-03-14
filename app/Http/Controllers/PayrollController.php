@@ -34,6 +34,8 @@ class PayrollController extends Controller
 	use MonthlyWorkedHours;
 	
 	public $apwcs_contribution = [];
+	public $total_dynamic_deductions = 0;
+	public $total_dynamic_deductions_zwl = 0;
 	public function index(Request $request)
 	{
 		$logged_user = auth()->user();
@@ -129,8 +131,9 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
+						'allowances' => function ($query) use($first_date) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+							$query->where('first_date', $first_date);
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -139,8 +142,9 @@ class PayrollController extends Controller
 							$query->where('first_date', '<=', $first_date)
 								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'deductions' => function ($query) {
+						'deductions' => function ($query) use($first_date) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+							$query->where('first_date', $first_date);
 						},
 						'otherPayments' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -188,7 +192,7 @@ class PayrollController extends Controller
 						}
 						return $basicsalary;
 					})
-					->addColumn('net_salary', function ($row)  use ($first_date) {
+					->addColumn('net_salary', function ($row)  use ($first_date, $selected_date) {
 						//payslip_type & basic_salary
 						foreach ($row->salaryBasic as $salaryBasic) {
 							if ($salaryBasic->first_date <= $first_date) {
@@ -208,6 +212,16 @@ class PayrollController extends Controller
 						$allowance_amount  = $this->allowances($row, $first_date, $type);
 						$deduction_amount  = $this->deductions($row, $first_date, $type);
 
+						$type              = "getArray";
+						$allowance_a = $this->allowances($row, $first_date, $type);
+						$deduction_a  = $this->deductions($row, $first_date, $type);
+
+						Log::info("For currrent Employee");
+						Log::debug($allowance_a);
+						Log::debug($deduction_a);
+						$this->calculate_salary_with_taxes($row,$first_date,$basicsalary, $selected_date,$payslip_type,true);
+
+						$deduction_amount + $this->total_dynamic_deductions;
 						//Net Salary
 						if ($payslip_type == 'Monthly') {
 							$total_salary = $this->totalSalary($row, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount);
@@ -232,7 +246,7 @@ class PayrollController extends Controller
 							$total_salary = $this->totalSalary($row, $payslip_type, $basicsalary, $allowance_amount, $deduction_amount, $pension_amount, $total);
 						}
 
-						return $total_salary;
+						return number_format($total_salary, 2,'.',',');
 
 						// if ($row->payslip_type == 'Monthly')
 						// {
@@ -388,8 +402,12 @@ class PayrollController extends Controller
 			'salaryBasic' => function ($query) {
 				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'allowances' => function ($query) {
-				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			'allowances' => function ($query) use ($first_date) {
+				$query->where(function ($q) use ($first_date) {
+					$q->where('first_date', $first_date)
+					  ->orWhere('is_recurring', true);
+				})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+	
 			},
 			'commissions' => function ($query) use ($first_date) {
 				$query->where('first_date', $first_date);
@@ -398,8 +416,11 @@ class PayrollController extends Controller
 				$query->where('first_date', '<=', $first_date)
 					->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
-			'deductions' => function ($query) {
-				$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			'deductions' => function ($query) use ($first_date) {
+				$query->where(function ($q) use ($first_date) {
+					$q->where('first_date', $first_date)
+					  ->orWhere('is_recurring', true);
+				})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 			},
 			'otherPayments' => function ($query) use ($first_date) {
 				$query->where('first_date', $first_date);
@@ -476,8 +497,12 @@ class PayrollController extends Controller
 			DB::beginTransaction();
 			try {
 				$employee = Employee::with([
-					'allowances' => function ($query) {
-						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					'allowances' => function ($query) use ($first_date) {
+						$query->where(function ($q) use ($first_date) {
+							$q->where('first_date', $first_date)
+							  ->orWhere('is_recurring', true);
+						})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			
 					},
 					'commissions' => function ($query) use ($first_date) {
 						$query->where('first_date', $first_date);
@@ -486,8 +511,12 @@ class PayrollController extends Controller
 						$query->where('first_date', '<=', $first_date)
 							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 					},
-					'deductions' => function ($query) {
-						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					'deductions' => function ($query) use ($first_date) {
+						$query->where(function ($q) use ($first_date) {
+							$q->where('first_date', $first_date)
+							  ->orWhere('is_recurring', true);
+						})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			
 					},
 					'otherPayments' => function ($query) use ($first_date) {
 						$query->where('first_date', $first_date);
@@ -504,8 +533,12 @@ class PayrollController extends Controller
 				
 
 				$employee = Employee::with([
-					'allowances' => function ($query) {
-						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					'allowances' => function ($query) use ($first_date) {
+						$query->where(function ($q) use ($first_date) {
+							$q->where('first_date', $first_date)
+							  ->orWhere('is_recurring', true);
+						})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			
 					},
 					'commissions' => function ($query) use ($first_date) {
 						$query->where('first_date', $first_date);
@@ -514,8 +547,12 @@ class PayrollController extends Controller
 						$query->where('first_date', '<=', $first_date)
 							->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 					},
-					'deductions' => function ($query) {
-						$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+					'deductions' => function ($query) use ($first_date) {
+						$query->where(function ($q) use ($first_date) {
+							$q->where('first_date', $first_date)
+							  ->orWhere('is_recurring', true);
+						})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+			
 					},
 					'otherPayments' => function ($query) use ($first_date) {
 						$query->where('first_date', $first_date);
@@ -637,8 +674,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -647,8 +687,11 @@ class PayrollController extends Controller
 							$query->where('first_date', '<=', $first_date)
 								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'deductions' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'deductions' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'otherPayments' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -672,8 +715,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -705,8 +751,11 @@ class PayrollController extends Controller
 						'salaryBasic' => function ($query) {
 							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'allowances' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'allowances' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'commissions' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -715,8 +764,11 @@ class PayrollController extends Controller
 							$query->where('first_date', '<=', $first_date)
 								->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
-						'deductions' => function ($query) {
-							$query->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
+						'deductions' => function ($query) use ($first_date) {
+							$query->where(function ($q) use ($first_date) {
+								$q->where('first_date', $first_date)
+								  ->orWhere('is_recurring', true);
+							})->orderByRaw('DATE_FORMAT(first_date, "%y-%m")');
 						},
 						'otherPayments' => function ($query) use ($first_date) {
 							$query->where('first_date', $first_date);
@@ -842,7 +894,8 @@ class PayrollController extends Controller
 				DB::beginTransaction();
 				try {
 					$total_sum = 0;
-				
+					$total_sum_zwl = 0;
+
 					foreach ($employees as $employee) {
 						//payslip_type & basic_salary
 						foreach ($employee->salaryBasic as $salaryBasic) {
@@ -918,6 +971,7 @@ class PayrollController extends Controller
 						$data['company_id']     = $employee->company_id;
 
 						$total_sum = $total_sum + $net_salary;
+						$total_sum_zwl = $total_sum_zwl + $net_salary_zwl;
 
 						if ($employee->loans) {
 							foreach ($employee->loans as $loan) {
@@ -948,14 +1002,15 @@ class PayrollController extends Controller
 					}
 
 
-					$account_balance = DB::table('finance_bank_cashes')->where('id', config('variable.account_id'))->pluck('account_balance')->first();
+					$account_balance = DB::table('finance_bank_cashes')->where('id', config('variable.account_id'))->where('currency_symbol', '$')->pluck('account_balance')->first();
+					$account_balance_zwl = DB::table('finance_bank_cashes')->where('id', config('variable.account_id_zwl'))->pluck('account_balance')->first();
 
 					if ((int)$account_balance < $total_sum) {
 						throw new Exception("requested balance is less then available balance");
 					}
 
 					$new_balance = (int)$account_balance - (int)$total_sum;
-
+					$new_balance_zwl = (int)$account_balance_zwl - (int)$total_sum_zwl;
 					$finance_data = [];
 
 					$finance_data['account_id'] = config('variable.account_id');
@@ -966,12 +1021,25 @@ class PayrollController extends Controller
 
 					FinanceBankCash::whereId($finance_data['account_id'])->update(['account_balance' => $new_balance]);
 
+					
 					$Expense = FinanceTransaction::create($finance_data);
 
 					$finance_data['id'] = $Expense->id;
 
 					FinanceExpense::create($finance_data);
 
+					$finance_data['account_id'] = config('variable.account_id_zwl');
+					$finance_data['amount'] = $total_sum_zwl;
+					$finance_data['expense_date'] = now()->format(env('Date_Format'));
+					$finance_data['expense_reference'] = trans('file.Payroll');
+					FinanceBankCash::whereId($finance_data['account_id'])->update(['account_balance' => $new_balance_zwl]);
+					
+					$finance_data['currency_symbol'] = "ZWL";
+					$Expense = FinanceTransaction::create($finance_data);
+
+					$finance_data['id'] = $Expense->id;
+
+					FinanceExpense::create($finance_data);
 					DB::commit();
 				} catch (Exception $e) {
 					DB::rollback();
@@ -1185,7 +1253,7 @@ class PayrollController extends Controller
 		}
 	}
 
-	private function calculate_salary_with_taxes($employee, $first_date, $pbasic_salary, $month_year, $payslip_type)
+	private function calculate_salary_with_taxes($employee, $first_date, $pbasic_salary, $month_year, $payslip_type, $preview=false)
 	{
 
 		try{
@@ -1299,6 +1367,10 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+
+		$output['total_deductions']  = 0;
+		$output['total_deductions_zwl']  = 0;
+		$output['total_deductions'] += $zimra_deduction;
 		SalaryDeduction::create($data);
 
 		Log::info("I have created Zimra deduction");
@@ -1314,6 +1386,7 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		$output['total_deductions_zwl'] += $zimra_deduction_zwl;
 		SalaryDeduction::create($data);
 		Log::info("I have created Zimra zwl deduction");
 
@@ -1327,6 +1400,7 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		$output['total_deductions'] +=  $zimra_deduction * (0.03);
 		SalaryDeduction::create($data);
 
 		Log::info("I have created Zimra Aids deduction");
@@ -1342,6 +1416,7 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		$output['total_deductions_zwl'] +=  $zimra_deduction_zwl * (0.03);
 		SalaryDeduction::create($data);
 
 		$gross_salary = $basic_salary +
@@ -1379,6 +1454,7 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		$output['total_deductions'] += $nssa_payable_contribution;
 		SalaryDeduction::create($data);
 		Log::info("Inserted Nassa");
 
@@ -1396,6 +1472,7 @@ class PayrollController extends Controller
 		$data['deduction_type'] = 'Other Statutory Deduction';
 		$data['created_at'] = Carbon::now();
 		$data['updated_at'] = Carbon::now();
+		$output['total_deductions_zwl'] += $nssa_payable_contribution_zwl;
 		SalaryDeduction::create($data);
 
 
@@ -1426,7 +1503,16 @@ class PayrollController extends Controller
 		// $data['created_at'] = Carbon::now();
 		// $data['updated_at'] = Carbon::now();
 		// SalaryDeduction::create($data);
-		DB::commit();
+		if($preview)
+		{
+			$this->total_dynamic_deductions = $output['total_deductions'];
+			$this->total_dynamic_deductions_zwl = $output['total_deductions_zwl'];
+
+		}else 
+		{
+			DB::commit();
+
+		}
 	}catch (Throwable $e){
 		Log::error($e->getMessage());
 		DB::rollBack();

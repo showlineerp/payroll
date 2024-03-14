@@ -23,6 +23,7 @@
                     @else
                         <th> {{__('Allowance Amount')}}</th>
                     @endif
+                    <th>{{__('Recurring')}}</th>
                     <th>{{__('Taxable Percentage')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
@@ -54,53 +55,19 @@
                             </div>
 
                             <div class="col-md-6 form-group">
-                                <label>{{__('Allowance Type')}} *</label>
-                                <select name="is_taxable" id="allowance_is_taxable" required
+                                <label>{{__('Select Allowance')}} *</label>
+                                <select name="allowance_id" id="allowance_is_taxable" required
+                                 data-live-search = "true"
                                         class="form-control selectpicker"
-                                        title='{{__('Selecting',['key'=>__('Allowance Type')])}}...'>
-                                    <option value="1">{{trans('file.Taxable')}}</option>
-                                    <option value="0">{{trans('file.Non-Taxable')}}</option>
+                                        title='{{__('Selecting',['key'=>__('Allowance')])}}...'>
+                                   @if($employee_allowance->isNotEmpty())
+                                   @foreach($employee_allowance as $ea)
+                                   <option value="{{$ea->id}}">{{$ea->allowance_title}}</option>
+                                   @endforeach
+                                   @endif 
                                 </select>
                             </div>
-                            <div class="col-md-6 form-group">
-                                <label>{{__('Allowance Currency')}} *</label>
-                                <select name="currency_id" id="currency_id" required
-                                        class="form-control selectpicker">
-                                      @php 
-                                      $currencies =  App\Models\Currency::get();
-                                      @endphp
-                                        @if ($currencies->isNotEmpty())
-                                        @foreach($currencies as $cur)
-                                        <option value="{{$cur->id}}">{{$cur->name }} {{ $cur->symbol }}</option>
-                                        @endforeach
-                                        @endif
-                                </select>
-                            </div>
-                            <div class="col-md-6 form-group">
-                            <label>{{ __('Taxable percentage') }} </label>
-                                <input type="number" name="deductible_amt" id="deductible_amt"
-                                       placeholder={{__('Deductible percentage')}}
-                                                class="form-control text-left">
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label>{{__('Allowance Title')}} *</label>
-                                <input type="text" name="allowance_title" id="allowance_title"
-                                       placeholder={{__('Allowance Type')}}
-                                               required class="form-control">
-                            </div>
-                            <div class="col-md-6 form-group">
-                                @if(config('variable.currency_format')=='suffix')
-                                    <label>{{__('Allowance Amount')}} ({{config('variable.currency')}})
-                                            *</label>
-                                @else
-                                    <label>({{config('variable.currency')}}) {{__('Allowance Amount')}}
-                                            *</label>
-                                @endif
-                                <input type="text" name="allowance_amount" id="allowance_amount"
-                                       placeholder={{__('Allowance Amount')}}
-                                               required class="form-control">
-                            </div>
-
+                 
 
                             <div class="container">
                                 <br>

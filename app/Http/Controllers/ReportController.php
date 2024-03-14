@@ -1243,9 +1243,9 @@ class ReportController extends Controller {
 					{
 						return $general_settings_data->ssr_number;
 					})
-                    ->addColumn('works_number', function ($row)
+                    ->addColumn('full_name', function ($row)
 					{
-						return  "";
+						return  $row->employee->first_name. ' '.$row->employee->last_name;
 					})
 					->addColumn('ssn_number', function ($row)
 					{
