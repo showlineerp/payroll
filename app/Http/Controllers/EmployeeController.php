@@ -9,11 +9,13 @@ use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Http\traits\LeaveTypeDataManageTrait;
 use App\Imports\UsersImport;
+use App\Models\Allowances;
 use App\Models\Currency;
 use App\Models\office_shift;
 use App\Models\QualificationEducationLevel;
 use App\Models\QualificationLanguage;
 use App\Models\QualificationSkill;
+use App\Models\SalaryAllowance;
 use App\Models\status;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
@@ -396,11 +398,11 @@ class EmployeeController extends Controller
             $education_levels = QualificationEducationLevel::select('id', 'name')->get();
             $language_skills = QualificationLanguage::select('id', 'name')->get();
             $general_skills = QualificationSkill::select('id', 'name')->get();
-
+            $employee_allowance = Allowances::get();
             $roles = Role::where('id', '!=', 3)->where('is_active', 1)->select('id', 'name')->get(); //--new--
 
             return view('employee.dashboard', compact('employee', 'countries', 'companies',
-                'departments', 'designations', 'statuses', 'office_shifts', 'document_types', 'education_levels', 'language_skills', 'general_skills', 'roles'));
+                'departments', 'designations', 'statuses', 'office_shifts', 'document_types', 'education_levels', 'language_skills', 'general_skills', 'roles', 'employee_allowance'));
         } else {
             return response()->json(['success' => __('You are not authorized')]);
         }

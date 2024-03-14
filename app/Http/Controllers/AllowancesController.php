@@ -7,21 +7,23 @@ use App\Models\company;
 use App\Models\Currency;
 use App\Models\department;
 use App\Models\Employee;
+use App\Models\SalaryAllowance;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AllowancesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $logged_user = auth()->user();
+	/**
+	 * Display a listing of the resource.
+	 */
+	public function index(Request $request)
+	{
+		$logged_user = auth()->user();
 
 		if ($logged_user->can('view-details-employee')) {
 			$currencies = Currency::get();
-            $employees = Employee::get();
+			$employees = Employee::get();
 			$companies = company::get();
 			$departments = department::get();
 			if (request()->ajax()) {
@@ -49,20 +51,20 @@ class AllowancesController extends Controller
 		}
 
 		return response()->json(['success' => __('You are not authorized')]);
-    }
+	}
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+	/**
+	 * Show the form for creating a new resource.
+	 */
+	public function create()
+	{
+		//
+	}
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+	/**
+	 * Store a newly created resource in storage.
+	 */
+	public function store(Request $request)
 	{
 		$logged_user = auth()->user();
 		if ($logged_user->can('store-details-employee')) {
@@ -72,14 +74,14 @@ class AllowancesController extends Controller
 					'allowance_title',
 					'allowance_amount',
 					'is_taxable',
-                    'employee_group'
+					'employee_group'
 				),
 				[
 					'month_year' => 'required',
 					'allowance_title' => 'required',
 					'allowance_amount' => 'required|numeric',
 					'is_taxable' => 'required',
-                    'employee_group' => 'required'
+					'employee_group' => 'required'
 				]
 			);
 
@@ -91,25 +93,33 @@ class AllowancesController extends Controller
 
 			$currency = Currency::find($request->currency_id);
 
+			$employees = $this->get_employees_by_type($request);
 			$data = [];
 			$data['month_year'] = $request->month_year;
 			$data['first_date'] = $first_date;
 			$data['allowance_title'] = $request->allowance_title;
-			$data['employee_id'] = $employee->id;
+			$data['employee_id'] = $employees;
+			$data['employee_group'] = $request->company_id;
+			$data['company_id'] = $request->company_id;
+			$data['department_id'] = $request->department_id;
 			$data['allowance_amount'] = $request->allowance_amount;
 			$data['is_taxable'] = $request->is_taxable;
+			$data['is_recurring'] = $request->is_recurring;
 			$data['currency_id'] = $request->currency_id;
-			if ($request->is_taxable && empty($request->deductible_amt))
-			{
+			if ($request->is_taxable && empty($request->deductible_amt)) {
 				$data['deductible_amt'] = 100;
-			}else {
+			} else {
 				$data['deductible_amt'] = $request->deductible_amt;
 			}
 			if (!empty($currency)) {
 				$data['currency_symbol'] = $currency->symbol;
 			}
-			SalaryAllowance::create($data);
+			$data['created_at'] = Carbon::now();
+			$data['updated_at'] = Carbon::now();
 
+			Allowances::insert($data);
+
+			$this->add_allowances_to_employees($employees, $data);
 			return response()->json(['success' => __('Data Added successfully.')]);
 		}
 
@@ -119,7 +129,7 @@ class AllowancesController extends Controller
 	public function edit($id)
 	{
 		if (request()->ajax()) {
-			$data = SalaryAllowance::findOrFail($id);
+			$data = Allowances::findOrFail($id);
 
 			return response()->json(['data' => $data]);
 		}
@@ -184,7 +194,7 @@ class AllowancesController extends Controller
 		$logged_user = auth()->user();
 
 		if ($logged_user->can('modify-details-employee')) {
-			SalaryAllowance::whereId($id)->delete();
+			Allowances::whereId($id)->delete();
 
 			return response()->json(['success' => __('Data is successfully deleted')]);
 		}
@@ -192,5 +202,47 @@ class AllowancesController extends Controller
 		return response()->json(['success' => __('You are not authorized')]);
 	}
 
+	public function get_employees_by_type($request)
+	{
+		$employees = null;
+		$employee_arr = [];
+		if ($request->employee_group == 'company') {
+			$employee_arr = Employee::where('company_id', $request->company_id)->pluck('id')->toArray();
+			$employees =  implode(",", $employee_arr);
+		} else if ($request->employee_group == 'department') {
+			$employee_arr = Employee::where('department_id', $request->company_id)->pluck('id')->toArray();
+			$employees =  implode(",", $employee_arr);
+		} else {
+			$employee_arr = Employee::whereIn('id', $request->employees)->pluck('id')->toArray();
+			$employees =  implode(",", $employee_arr);
+		}
+		return $employees;
+	}
 
+	public function add_allowances_to_employees($employee, $allowance)
+	{
+		if (!empty($employee)) {
+			$employees = explode(",", $employee);
+			foreach ($employees as $employee) {
+				$data = [];
+				$data['month_year'] = $allowance["month_year"];
+				$data['first_date'] = $allowance["first_date"];
+				$data['allowance_title'] = $allowance["allowance_title"];
+				$data['employee_id'] = $employee;
+				$data['allowance_amount'] =  $allowance["allowance_amount"];
+				$data['is_taxable'] = $allowance["is_taxable"];
+				$data['is_taxable'] = $allowance["is_taxable"];
+				$data['currency_id'] = $allowance["currency_id"];
+				if ($allowance["is_taxable"] && empty($allowance["deductible_amt"])) {
+					$data['deductible_amt'] = 100;
+				} else {
+					$data['deductible_amt'] = $allowance["deductible_amt"];
+				}
+				if (!empty($currency)) {
+					$data['currency_symbol'] = $allowance["currency_symbol"];
+				}
+				SalaryAllowance::create($data);
+			}
+		}
+	}
 }

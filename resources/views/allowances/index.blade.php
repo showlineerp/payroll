@@ -70,7 +70,7 @@
                             </div>
                             <div class="col-md-6 form-group employee_groups company company_department">
                                 <label>{{__('Select Company')}} *</label>
-                                <select name="company" id="company_id" required 
+                                <select name="company_id" id="company_id"  
                                         class="form-control selectpicker dynamic"
                                         data-dependent="department_name"
                                         title='{{__('Selecting', ['key' => __('Employees')])}}...'>
@@ -85,7 +85,7 @@
 
                             <div class="col-md-6 form-group employee_groups company_department">
                                 <label>{{__('Select Department')}} *</label>
-                                <select name="department" id="department_id" required multiple
+                                <select name="department_id" id="department_id" 
                                         class="form-control selectpicker "
                                         data-live-search="true" data-live-search-style="contains"
                                         title='{{__('Selecting', ['key' => __('Departments')])}}...'>
@@ -102,7 +102,7 @@
                             </div>
                             <div class="col-md-6 form-group employee_groups select_employees">
                                 <label>{{__('Select Employees')}} *</label>
-                                <select name="employees" id="employees" required multiple
+                                <select name="employees[]" id="employees"  multiple
                                         class="form-control selectpicker"
                                         data-live-search="true" data-live-search-style="contains"
                                         title='{{__('Selecting', ['key' => __('Employees')])}}...'>
@@ -140,12 +140,7 @@
                                         @endif
                                 </select>
                             </div>
-                            <div class="col-md-6 form-group">
-                            <label>{{ __('Taxable percentage') }} </label>
-                                <input type="number" name="deductible_amt" id="deductible_amt"
-                                       placeholder={{__('Taxable percentage')}}
-                                                class="form-control text-left">
-                            </div>
+                           
                             <div class="col-md-6 form-group">
                                 <label>{{__('Allowance Title')}} *</label>
                                 <input type="text" name="allowance_title" id="allowance_title"
@@ -163,6 +158,12 @@
                                 <input type="text" name="allowance_amount" id="allowance_amount"
                                        placeholder={{__('Allowance Amount')}}
                                                required class="form-control">
+                            </div>
+                            <div class="col-md-6 form-group">
+                            <label>{{ __('Taxable percentage') }} </label>
+                                <input type="number" name="deductible_amt" id="deductible_amt"
+                                       placeholder={{__('Taxable percentage')}}
+                                                class="form-control text-left">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>{{__('Recurring Allowance')}} *</label>
@@ -220,7 +221,17 @@
     @endsection
     @push('scripts')
     <script>
-        
+        $(Document).ready( function(){
+
+      
+         let month_year = $('.month_year');
+        month_year.datepicker({
+            format: "MM-yyyy",
+            startView: "months",
+            minViewMode: 1,
+            autoclose: true,
+        }).datepicker("setDate", new Date());
+    });
     $('#allowance-table').DataTable().clear().destroy();
 
 var table_table = $('#allowance-table').DataTable({
@@ -506,7 +517,7 @@ $('.dynamic').change(function () {
         }else if (group == 'select_employees')
         {
             $(".employee_groups").hide();
-            $(".employees").show();
+            $(".select_employees").show();
         }else 
         {
             $(".employee_groups").hide();
